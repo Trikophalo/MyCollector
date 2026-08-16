@@ -34,6 +34,23 @@
 </head>
 <body>
   <!--
+    Räumt Service Worker früherer Deployments ab. Vor dem Wechsel auf
+    "kein Service Worker" (siehe flutter_bootstrap.js) wurde einer
+    registriert, der die damalige App-Version dauerhaft aus dem Cache
+    ausliefert — Besucher von damals sähen sonst nie eine neue Version.
+    Nach dem Abmelden genügt ein einziges Neuladen der Seite.
+  -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then(function (registrations) {
+        registrations.forEach(function (registration) {
+          registration.unregister();
+        });
+      });
+    }
+  </script>
+
+  <!--
     You can customize the "flutter_bootstrap.js" script.
     This is useful to provide a custom configuration to the Flutter loader
     or to give the user feedback during the initialization process.

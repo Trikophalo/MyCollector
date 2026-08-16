@@ -40,6 +40,13 @@ jobs:
       # https://<owner>.github.io/<repo>/
       - run: flutter build web --release --base-href /${{ github.event.repository.name }}/
 
+      # Kein Service Worker für die Vorschau (siehe web/flutter_bootstrap.js).
+      # Das Löschen der Datei sorgt zusätzlich dafür, dass bei Besuchern noch
+      # registrierte Service Worker früherer Deployments bei ihrer
+      # Update-Prüfung ein 404 erhalten — der Browser deregistriert sie dann
+      # und liefert ab dem nächsten Laden wieder direkt vom Server aus.
+      - run: rm -f build/web/flutter_service_worker.js
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
