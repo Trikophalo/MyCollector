@@ -16,6 +16,21 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// Die App läuft dabei vollständig echt — eigene Datenbank im Arbeitsspeicher,
 /// echte Bewertungslogik, echte Screens. Ersetzt wird nur die externe
 /// Datenquelle, damit Tests ohne Netz und reproduzierbar laufen.
+/// Beantwortet die Anfragen von `path_provider`.
+///
+/// Der Bild-Zwischenspeicher fragt beim ersten Laden nach einem
+/// Verzeichnis. In der Testumgebung gibt es keine Plattformimplementierung,
+/// weshalb der Aufruf sonst mit einer `MissingPluginException` abbricht —
+/// und zwar erst, seit die Beispieldaten echte Bildadressen tragen.
+void _stubPathProvider() {
+  const channel = MethodChannel('plugins.flutter.io/path_provider');
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(
+        channel,
+        (call) async => Directory.systemTemp.createTempSync('mycollector').path,
+      );
+}
+
 Future<ProviderContainer> pumpApp(
   WidgetTester tester, {
   bool withDemoData = true,
@@ -23,6 +38,8 @@ Future<ProviderContainer> pumpApp(
   Size surfaceSize = const Size(414, 896),
   String? fontFamily,
 }) async {
+  _stubPathProvider();
+
   tester.view
     ..physicalSize = surfaceSize * 3
     ..devicePixelRatio = 3;

@@ -87,12 +87,24 @@ class $CardEntriesTable extends CardEntries
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _imageBaseEnMeta = const VerificationMeta(
-    'imageBaseEn',
+  static const VerificationMeta _serieIdMeta = const VerificationMeta(
+    'serieId',
   );
   @override
-  late final GeneratedColumn<String> imageBaseEn = GeneratedColumn<String>(
-    'image_base_en',
+  late final GeneratedColumn<String> serieId = GeneratedColumn<String>(
+    'serie_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(''),
+  );
+  static const VerificationMeta _setAbbreviationMeta = const VerificationMeta(
+    'setAbbreviation',
+  );
+  @override
+  late final GeneratedColumn<String> setAbbreviation = GeneratedColumn<String>(
+    'set_abbreviation',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -142,7 +154,8 @@ class $CardEntriesTable extends CardEntries
     nameDe,
     rarity,
     imageBase,
-    imageBaseEn,
+    serieId,
+    setAbbreviation,
     setCardCount,
     variants,
     cachedAt,
@@ -214,12 +227,18 @@ class $CardEntriesTable extends CardEntries
         imageBase.isAcceptableOrUnknown(data['image_base']!, _imageBaseMeta),
       );
     }
-    if (data.containsKey('image_base_en')) {
+    if (data.containsKey('serie_id')) {
       context.handle(
-        _imageBaseEnMeta,
-        imageBaseEn.isAcceptableOrUnknown(
-          data['image_base_en']!,
-          _imageBaseEnMeta,
+        _serieIdMeta,
+        serieId.isAcceptableOrUnknown(data['serie_id']!, _serieIdMeta),
+      );
+    }
+    if (data.containsKey('set_abbreviation')) {
+      context.handle(
+        _setAbbreviationMeta,
+        setAbbreviation.isAcceptableOrUnknown(
+          data['set_abbreviation']!,
+          _setAbbreviationMeta,
         ),
       );
     }
@@ -287,9 +306,13 @@ class $CardEntriesTable extends CardEntries
         DriftSqlType.string,
         data['${effectivePrefix}image_base'],
       ),
-      imageBaseEn: attachedDatabase.typeMapping.read(
+      serieId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}image_base_en'],
+        data['${effectivePrefix}serie_id'],
+      )!,
+      setAbbreviation: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}set_abbreviation'],
       ),
       setCardCount: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
@@ -321,7 +344,12 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
   final String? nameDe;
   final String? rarity;
   final String? imageBase;
-  final String? imageBaseEn;
+
+  /// Serie des Sets (z. B. `sv`), Teil des Bildpfads.
+  final String serieId;
+
+  /// Offizielles Set-Kürzel, z. B. `PFL`.
+  final String? setAbbreviation;
   final int? setCardCount;
 
   /// Kommaseparierte Variantencodes, z. B. `normal,reverse`.
@@ -336,7 +364,8 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
     this.nameDe,
     this.rarity,
     this.imageBase,
-    this.imageBaseEn,
+    required this.serieId,
+    this.setAbbreviation,
     this.setCardCount,
     required this.variants,
     required this.cachedAt,
@@ -358,8 +387,9 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
     if (!nullToAbsent || imageBase != null) {
       map['image_base'] = Variable<String>(imageBase);
     }
-    if (!nullToAbsent || imageBaseEn != null) {
-      map['image_base_en'] = Variable<String>(imageBaseEn);
+    map['serie_id'] = Variable<String>(serieId);
+    if (!nullToAbsent || setAbbreviation != null) {
+      map['set_abbreviation'] = Variable<String>(setAbbreviation);
     }
     if (!nullToAbsent || setCardCount != null) {
       map['set_card_count'] = Variable<int>(setCardCount);
@@ -385,9 +415,10 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
       imageBase: imageBase == null && nullToAbsent
           ? const Value.absent()
           : Value(imageBase),
-      imageBaseEn: imageBaseEn == null && nullToAbsent
+      serieId: Value(serieId),
+      setAbbreviation: setAbbreviation == null && nullToAbsent
           ? const Value.absent()
-          : Value(imageBaseEn),
+          : Value(setAbbreviation),
       setCardCount: setCardCount == null && nullToAbsent
           ? const Value.absent()
           : Value(setCardCount),
@@ -410,7 +441,8 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
       nameDe: serializer.fromJson<String?>(json['nameDe']),
       rarity: serializer.fromJson<String?>(json['rarity']),
       imageBase: serializer.fromJson<String?>(json['imageBase']),
-      imageBaseEn: serializer.fromJson<String?>(json['imageBaseEn']),
+      serieId: serializer.fromJson<String>(json['serieId']),
+      setAbbreviation: serializer.fromJson<String?>(json['setAbbreviation']),
       setCardCount: serializer.fromJson<int?>(json['setCardCount']),
       variants: serializer.fromJson<String>(json['variants']),
       cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
@@ -428,7 +460,8 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
       'nameDe': serializer.toJson<String?>(nameDe),
       'rarity': serializer.toJson<String?>(rarity),
       'imageBase': serializer.toJson<String?>(imageBase),
-      'imageBaseEn': serializer.toJson<String?>(imageBaseEn),
+      'serieId': serializer.toJson<String>(serieId),
+      'setAbbreviation': serializer.toJson<String?>(setAbbreviation),
       'setCardCount': serializer.toJson<int?>(setCardCount),
       'variants': serializer.toJson<String>(variants),
       'cachedAt': serializer.toJson<DateTime>(cachedAt),
@@ -444,7 +477,8 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
     Value<String?> nameDe = const Value.absent(),
     Value<String?> rarity = const Value.absent(),
     Value<String?> imageBase = const Value.absent(),
-    Value<String?> imageBaseEn = const Value.absent(),
+    String? serieId,
+    Value<String?> setAbbreviation = const Value.absent(),
     Value<int?> setCardCount = const Value.absent(),
     String? variants,
     DateTime? cachedAt,
@@ -457,7 +491,10 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
     nameDe: nameDe.present ? nameDe.value : this.nameDe,
     rarity: rarity.present ? rarity.value : this.rarity,
     imageBase: imageBase.present ? imageBase.value : this.imageBase,
-    imageBaseEn: imageBaseEn.present ? imageBaseEn.value : this.imageBaseEn,
+    serieId: serieId ?? this.serieId,
+    setAbbreviation: setAbbreviation.present
+        ? setAbbreviation.value
+        : this.setAbbreviation,
     setCardCount: setCardCount.present ? setCardCount.value : this.setCardCount,
     variants: variants ?? this.variants,
     cachedAt: cachedAt ?? this.cachedAt,
@@ -472,9 +509,10 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
       nameDe: data.nameDe.present ? data.nameDe.value : this.nameDe,
       rarity: data.rarity.present ? data.rarity.value : this.rarity,
       imageBase: data.imageBase.present ? data.imageBase.value : this.imageBase,
-      imageBaseEn: data.imageBaseEn.present
-          ? data.imageBaseEn.value
-          : this.imageBaseEn,
+      serieId: data.serieId.present ? data.serieId.value : this.serieId,
+      setAbbreviation: data.setAbbreviation.present
+          ? data.setAbbreviation.value
+          : this.setAbbreviation,
       setCardCount: data.setCardCount.present
           ? data.setCardCount.value
           : this.setCardCount,
@@ -494,7 +532,8 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
           ..write('nameDe: $nameDe, ')
           ..write('rarity: $rarity, ')
           ..write('imageBase: $imageBase, ')
-          ..write('imageBaseEn: $imageBaseEn, ')
+          ..write('serieId: $serieId, ')
+          ..write('setAbbreviation: $setAbbreviation, ')
           ..write('setCardCount: $setCardCount, ')
           ..write('variants: $variants, ')
           ..write('cachedAt: $cachedAt')
@@ -512,7 +551,8 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
     nameDe,
     rarity,
     imageBase,
-    imageBaseEn,
+    serieId,
+    setAbbreviation,
     setCardCount,
     variants,
     cachedAt,
@@ -529,7 +569,8 @@ class CardEntry extends DataClass implements Insertable<CardEntry> {
           other.nameDe == this.nameDe &&
           other.rarity == this.rarity &&
           other.imageBase == this.imageBase &&
-          other.imageBaseEn == this.imageBaseEn &&
+          other.serieId == this.serieId &&
+          other.setAbbreviation == this.setAbbreviation &&
           other.setCardCount == this.setCardCount &&
           other.variants == this.variants &&
           other.cachedAt == this.cachedAt);
@@ -544,7 +585,8 @@ class CardEntriesCompanion extends UpdateCompanion<CardEntry> {
   final Value<String?> nameDe;
   final Value<String?> rarity;
   final Value<String?> imageBase;
-  final Value<String?> imageBaseEn;
+  final Value<String> serieId;
+  final Value<String?> setAbbreviation;
   final Value<int?> setCardCount;
   final Value<String> variants;
   final Value<DateTime> cachedAt;
@@ -558,7 +600,8 @@ class CardEntriesCompanion extends UpdateCompanion<CardEntry> {
     this.nameDe = const Value.absent(),
     this.rarity = const Value.absent(),
     this.imageBase = const Value.absent(),
-    this.imageBaseEn = const Value.absent(),
+    this.serieId = const Value.absent(),
+    this.setAbbreviation = const Value.absent(),
     this.setCardCount = const Value.absent(),
     this.variants = const Value.absent(),
     this.cachedAt = const Value.absent(),
@@ -573,7 +616,8 @@ class CardEntriesCompanion extends UpdateCompanion<CardEntry> {
     this.nameDe = const Value.absent(),
     this.rarity = const Value.absent(),
     this.imageBase = const Value.absent(),
-    this.imageBaseEn = const Value.absent(),
+    this.serieId = const Value.absent(),
+    this.setAbbreviation = const Value.absent(),
     this.setCardCount = const Value.absent(),
     this.variants = const Value.absent(),
     required DateTime cachedAt,
@@ -593,7 +637,8 @@ class CardEntriesCompanion extends UpdateCompanion<CardEntry> {
     Expression<String>? nameDe,
     Expression<String>? rarity,
     Expression<String>? imageBase,
-    Expression<String>? imageBaseEn,
+    Expression<String>? serieId,
+    Expression<String>? setAbbreviation,
     Expression<int>? setCardCount,
     Expression<String>? variants,
     Expression<DateTime>? cachedAt,
@@ -608,7 +653,8 @@ class CardEntriesCompanion extends UpdateCompanion<CardEntry> {
       if (nameDe != null) 'name_de': nameDe,
       if (rarity != null) 'rarity': rarity,
       if (imageBase != null) 'image_base': imageBase,
-      if (imageBaseEn != null) 'image_base_en': imageBaseEn,
+      if (serieId != null) 'serie_id': serieId,
+      if (setAbbreviation != null) 'set_abbreviation': setAbbreviation,
       if (setCardCount != null) 'set_card_count': setCardCount,
       if (variants != null) 'variants': variants,
       if (cachedAt != null) 'cached_at': cachedAt,
@@ -625,7 +671,8 @@ class CardEntriesCompanion extends UpdateCompanion<CardEntry> {
     Value<String?>? nameDe,
     Value<String?>? rarity,
     Value<String?>? imageBase,
-    Value<String?>? imageBaseEn,
+    Value<String>? serieId,
+    Value<String?>? setAbbreviation,
     Value<int?>? setCardCount,
     Value<String>? variants,
     Value<DateTime>? cachedAt,
@@ -640,7 +687,8 @@ class CardEntriesCompanion extends UpdateCompanion<CardEntry> {
       nameDe: nameDe ?? this.nameDe,
       rarity: rarity ?? this.rarity,
       imageBase: imageBase ?? this.imageBase,
-      imageBaseEn: imageBaseEn ?? this.imageBaseEn,
+      serieId: serieId ?? this.serieId,
+      setAbbreviation: setAbbreviation ?? this.setAbbreviation,
       setCardCount: setCardCount ?? this.setCardCount,
       variants: variants ?? this.variants,
       cachedAt: cachedAt ?? this.cachedAt,
@@ -675,8 +723,11 @@ class CardEntriesCompanion extends UpdateCompanion<CardEntry> {
     if (imageBase.present) {
       map['image_base'] = Variable<String>(imageBase.value);
     }
-    if (imageBaseEn.present) {
-      map['image_base_en'] = Variable<String>(imageBaseEn.value);
+    if (serieId.present) {
+      map['serie_id'] = Variable<String>(serieId.value);
+    }
+    if (setAbbreviation.present) {
+      map['set_abbreviation'] = Variable<String>(setAbbreviation.value);
     }
     if (setCardCount.present) {
       map['set_card_count'] = Variable<int>(setCardCount.value);
@@ -704,7 +755,8 @@ class CardEntriesCompanion extends UpdateCompanion<CardEntry> {
           ..write('nameDe: $nameDe, ')
           ..write('rarity: $rarity, ')
           ..write('imageBase: $imageBase, ')
-          ..write('imageBaseEn: $imageBaseEn, ')
+          ..write('serieId: $serieId, ')
+          ..write('setAbbreviation: $setAbbreviation, ')
           ..write('setCardCount: $setCardCount, ')
           ..write('variants: $variants, ')
           ..write('cachedAt: $cachedAt, ')
@@ -751,6 +803,17 @@ class $SealedEntriesTable extends SealedEntries
   @override
   late final GeneratedColumn<String> setId = GeneratedColumn<String>(
     'set_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serieIdMeta = const VerificationMeta(
+    'serieId',
+  );
+  @override
+  late final GeneratedColumn<String> serieId = GeneratedColumn<String>(
+    'serie_id',
     aliasedName,
     true,
     type: DriftSqlType.string,
@@ -820,6 +883,7 @@ class $SealedEntriesTable extends SealedEntries
     name,
     type,
     setId,
+    serieId,
     setName,
     language,
     image,
@@ -863,6 +927,12 @@ class $SealedEntriesTable extends SealedEntries
       context.handle(
         _setIdMeta,
         setId.isAcceptableOrUnknown(data['set_id']!, _setIdMeta),
+      );
+    }
+    if (data.containsKey('serie_id')) {
+      context.handle(
+        _serieIdMeta,
+        serieId.isAcceptableOrUnknown(data['serie_id']!, _serieIdMeta),
       );
     }
     if (data.containsKey('set_name')) {
@@ -922,6 +992,10 @@ class $SealedEntriesTable extends SealedEntries
         DriftSqlType.string,
         data['${effectivePrefix}set_id'],
       ),
+      serieId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}serie_id'],
+      ),
       setName: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}set_name'],
@@ -956,6 +1030,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
   final String name;
   final String type;
   final String? setId;
+  final String? serieId;
   final String? setName;
   final String language;
   final String? image;
@@ -966,6 +1041,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
     required this.name,
     required this.type,
     this.setId,
+    this.serieId,
     this.setName,
     required this.language,
     this.image,
@@ -980,6 +1056,9 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
     map['type'] = Variable<String>(type);
     if (!nullToAbsent || setId != null) {
       map['set_id'] = Variable<String>(setId);
+    }
+    if (!nullToAbsent || serieId != null) {
+      map['serie_id'] = Variable<String>(serieId);
     }
     if (!nullToAbsent || setName != null) {
       map['set_name'] = Variable<String>(setName);
@@ -1001,6 +1080,9 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
       setId: setId == null && nullToAbsent
           ? const Value.absent()
           : Value(setId),
+      serieId: serieId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serieId),
       setName: setName == null && nullToAbsent
           ? const Value.absent()
           : Value(setName),
@@ -1023,6 +1105,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
       name: serializer.fromJson<String>(json['name']),
       type: serializer.fromJson<String>(json['type']),
       setId: serializer.fromJson<String?>(json['setId']),
+      serieId: serializer.fromJson<String?>(json['serieId']),
       setName: serializer.fromJson<String?>(json['setName']),
       language: serializer.fromJson<String>(json['language']),
       image: serializer.fromJson<String?>(json['image']),
@@ -1038,6 +1121,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
       'name': serializer.toJson<String>(name),
       'type': serializer.toJson<String>(type),
       'setId': serializer.toJson<String?>(setId),
+      'serieId': serializer.toJson<String?>(serieId),
       'setName': serializer.toJson<String?>(setName),
       'language': serializer.toJson<String>(language),
       'image': serializer.toJson<String?>(image),
@@ -1051,6 +1135,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
     String? name,
     String? type,
     Value<String?> setId = const Value.absent(),
+    Value<String?> serieId = const Value.absent(),
     Value<String?> setName = const Value.absent(),
     String? language,
     Value<String?> image = const Value.absent(),
@@ -1061,6 +1146,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
     name: name ?? this.name,
     type: type ?? this.type,
     setId: setId.present ? setId.value : this.setId,
+    serieId: serieId.present ? serieId.value : this.serieId,
     setName: setName.present ? setName.value : this.setName,
     language: language ?? this.language,
     image: image.present ? image.value : this.image,
@@ -1073,6 +1159,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
       name: data.name.present ? data.name.value : this.name,
       type: data.type.present ? data.type.value : this.type,
       setId: data.setId.present ? data.setId.value : this.setId,
+      serieId: data.serieId.present ? data.serieId.value : this.serieId,
       setName: data.setName.present ? data.setName.value : this.setName,
       language: data.language.present ? data.language.value : this.language,
       image: data.image.present ? data.image.value : this.image,
@@ -1088,6 +1175,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('setId: $setId, ')
+          ..write('serieId: $serieId, ')
           ..write('setName: $setName, ')
           ..write('language: $language, ')
           ..write('image: $image, ')
@@ -1103,6 +1191,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
     name,
     type,
     setId,
+    serieId,
     setName,
     language,
     image,
@@ -1117,6 +1206,7 @@ class SealedEntry extends DataClass implements Insertable<SealedEntry> {
           other.name == this.name &&
           other.type == this.type &&
           other.setId == this.setId &&
+          other.serieId == this.serieId &&
           other.setName == this.setName &&
           other.language == this.language &&
           other.image == this.image &&
@@ -1129,6 +1219,7 @@ class SealedEntriesCompanion extends UpdateCompanion<SealedEntry> {
   final Value<String> name;
   final Value<String> type;
   final Value<String?> setId;
+  final Value<String?> serieId;
   final Value<String?> setName;
   final Value<String> language;
   final Value<String?> image;
@@ -1140,6 +1231,7 @@ class SealedEntriesCompanion extends UpdateCompanion<SealedEntry> {
     this.name = const Value.absent(),
     this.type = const Value.absent(),
     this.setId = const Value.absent(),
+    this.serieId = const Value.absent(),
     this.setName = const Value.absent(),
     this.language = const Value.absent(),
     this.image = const Value.absent(),
@@ -1152,6 +1244,7 @@ class SealedEntriesCompanion extends UpdateCompanion<SealedEntry> {
     required String name,
     required String type,
     this.setId = const Value.absent(),
+    this.serieId = const Value.absent(),
     this.setName = const Value.absent(),
     this.language = const Value.absent(),
     this.image = const Value.absent(),
@@ -1167,6 +1260,7 @@ class SealedEntriesCompanion extends UpdateCompanion<SealedEntry> {
     Expression<String>? name,
     Expression<String>? type,
     Expression<String>? setId,
+    Expression<String>? serieId,
     Expression<String>? setName,
     Expression<String>? language,
     Expression<String>? image,
@@ -1179,6 +1273,7 @@ class SealedEntriesCompanion extends UpdateCompanion<SealedEntry> {
       if (name != null) 'name': name,
       if (type != null) 'type': type,
       if (setId != null) 'set_id': setId,
+      if (serieId != null) 'serie_id': serieId,
       if (setName != null) 'set_name': setName,
       if (language != null) 'language': language,
       if (image != null) 'image': image,
@@ -1193,6 +1288,7 @@ class SealedEntriesCompanion extends UpdateCompanion<SealedEntry> {
     Value<String>? name,
     Value<String>? type,
     Value<String?>? setId,
+    Value<String?>? serieId,
     Value<String?>? setName,
     Value<String>? language,
     Value<String?>? image,
@@ -1205,6 +1301,7 @@ class SealedEntriesCompanion extends UpdateCompanion<SealedEntry> {
       name: name ?? this.name,
       type: type ?? this.type,
       setId: setId ?? this.setId,
+      serieId: serieId ?? this.serieId,
       setName: setName ?? this.setName,
       language: language ?? this.language,
       image: image ?? this.image,
@@ -1228,6 +1325,9 @@ class SealedEntriesCompanion extends UpdateCompanion<SealedEntry> {
     }
     if (setId.present) {
       map['set_id'] = Variable<String>(setId.value);
+    }
+    if (serieId.present) {
+      map['serie_id'] = Variable<String>(serieId.value);
     }
     if (setName.present) {
       map['set_name'] = Variable<String>(setName.value);
@@ -1257,6 +1357,7 @@ class SealedEntriesCompanion extends UpdateCompanion<SealedEntry> {
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('setId: $setId, ')
+          ..write('serieId: $serieId, ')
           ..write('setName: $setName, ')
           ..write('language: $language, ')
           ..write('image: $image, ')
@@ -3229,7 +3330,8 @@ typedef $$CardEntriesTableCreateCompanionBuilder =
       Value<String?> nameDe,
       Value<String?> rarity,
       Value<String?> imageBase,
-      Value<String?> imageBaseEn,
+      Value<String> serieId,
+      Value<String?> setAbbreviation,
       Value<int?> setCardCount,
       Value<String> variants,
       required DateTime cachedAt,
@@ -3245,7 +3347,8 @@ typedef $$CardEntriesTableUpdateCompanionBuilder =
       Value<String?> nameDe,
       Value<String?> rarity,
       Value<String?> imageBase,
-      Value<String?> imageBaseEn,
+      Value<String> serieId,
+      Value<String?> setAbbreviation,
       Value<int?> setCardCount,
       Value<String> variants,
       Value<DateTime> cachedAt,
@@ -3301,8 +3404,13 @@ class $$CardEntriesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get imageBaseEn => $composableBuilder(
-    column: $table.imageBaseEn,
+  ColumnFilters<String> get serieId => $composableBuilder(
+    column: $table.serieId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get setAbbreviation => $composableBuilder(
+    column: $table.setAbbreviation,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3371,8 +3479,13 @@ class $$CardEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get imageBaseEn => $composableBuilder(
-    column: $table.imageBaseEn,
+  ColumnOrderings<String> get serieId => $composableBuilder(
+    column: $table.serieId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get setAbbreviation => $composableBuilder(
+    column: $table.setAbbreviation,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -3425,8 +3538,11 @@ class $$CardEntriesTableAnnotationComposer
   GeneratedColumn<String> get imageBase =>
       $composableBuilder(column: $table.imageBase, builder: (column) => column);
 
-  GeneratedColumn<String> get imageBaseEn => $composableBuilder(
-    column: $table.imageBaseEn,
+  GeneratedColumn<String> get serieId =>
+      $composableBuilder(column: $table.serieId, builder: (column) => column);
+
+  GeneratedColumn<String> get setAbbreviation => $composableBuilder(
+    column: $table.setAbbreviation,
     builder: (column) => column,
   );
 
@@ -3481,7 +3597,8 @@ class $$CardEntriesTableTableManager
                 Value<String?> nameDe = const Value.absent(),
                 Value<String?> rarity = const Value.absent(),
                 Value<String?> imageBase = const Value.absent(),
-                Value<String?> imageBaseEn = const Value.absent(),
+                Value<String> serieId = const Value.absent(),
+                Value<String?> setAbbreviation = const Value.absent(),
                 Value<int?> setCardCount = const Value.absent(),
                 Value<String> variants = const Value.absent(),
                 Value<DateTime> cachedAt = const Value.absent(),
@@ -3495,7 +3612,8 @@ class $$CardEntriesTableTableManager
                 nameDe: nameDe,
                 rarity: rarity,
                 imageBase: imageBase,
-                imageBaseEn: imageBaseEn,
+                serieId: serieId,
+                setAbbreviation: setAbbreviation,
                 setCardCount: setCardCount,
                 variants: variants,
                 cachedAt: cachedAt,
@@ -3511,7 +3629,8 @@ class $$CardEntriesTableTableManager
                 Value<String?> nameDe = const Value.absent(),
                 Value<String?> rarity = const Value.absent(),
                 Value<String?> imageBase = const Value.absent(),
-                Value<String?> imageBaseEn = const Value.absent(),
+                Value<String> serieId = const Value.absent(),
+                Value<String?> setAbbreviation = const Value.absent(),
                 Value<int?> setCardCount = const Value.absent(),
                 Value<String> variants = const Value.absent(),
                 required DateTime cachedAt,
@@ -3525,7 +3644,8 @@ class $$CardEntriesTableTableManager
                 nameDe: nameDe,
                 rarity: rarity,
                 imageBase: imageBase,
-                imageBaseEn: imageBaseEn,
+                serieId: serieId,
+                setAbbreviation: setAbbreviation,
                 setCardCount: setCardCount,
                 variants: variants,
                 cachedAt: cachedAt,
@@ -3559,6 +3679,7 @@ typedef $$SealedEntriesTableCreateCompanionBuilder =
       required String name,
       required String type,
       Value<String?> setId,
+      Value<String?> serieId,
       Value<String?> setName,
       Value<String> language,
       Value<String?> image,
@@ -3572,6 +3693,7 @@ typedef $$SealedEntriesTableUpdateCompanionBuilder =
       Value<String> name,
       Value<String> type,
       Value<String?> setId,
+      Value<String?> serieId,
       Value<String?> setName,
       Value<String> language,
       Value<String?> image,
@@ -3606,6 +3728,11 @@ class $$SealedEntriesTableFilterComposer
 
   ColumnFilters<String> get setId => $composableBuilder(
     column: $table.setId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get serieId => $composableBuilder(
+    column: $table.serieId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3664,6 +3791,11 @@ class $$SealedEntriesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get serieId => $composableBuilder(
+    column: $table.serieId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get setName => $composableBuilder(
     column: $table.setName,
     builder: (column) => ColumnOrderings(column),
@@ -3710,6 +3842,9 @@ class $$SealedEntriesTableAnnotationComposer
 
   GeneratedColumn<String> get setId =>
       $composableBuilder(column: $table.setId, builder: (column) => column);
+
+  GeneratedColumn<String> get serieId =>
+      $composableBuilder(column: $table.serieId, builder: (column) => column);
 
   GeneratedColumn<String> get setName =>
       $composableBuilder(column: $table.setName, builder: (column) => column);
@@ -3762,6 +3897,7 @@ class $$SealedEntriesTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String> type = const Value.absent(),
                 Value<String?> setId = const Value.absent(),
+                Value<String?> serieId = const Value.absent(),
                 Value<String?> setName = const Value.absent(),
                 Value<String> language = const Value.absent(),
                 Value<String?> image = const Value.absent(),
@@ -3773,6 +3909,7 @@ class $$SealedEntriesTableTableManager
                 name: name,
                 type: type,
                 setId: setId,
+                serieId: serieId,
                 setName: setName,
                 language: language,
                 image: image,
@@ -3786,6 +3923,7 @@ class $$SealedEntriesTableTableManager
                 required String name,
                 required String type,
                 Value<String?> setId = const Value.absent(),
+                Value<String?> serieId = const Value.absent(),
                 Value<String?> setName = const Value.absent(),
                 Value<String> language = const Value.absent(),
                 Value<String?> image = const Value.absent(),
@@ -3797,6 +3935,7 @@ class $$SealedEntriesTableTableManager
                 name: name,
                 type: type,
                 setId: setId,
+                serieId: serieId,
                 setName: setName,
                 language: language,
                 image: image,

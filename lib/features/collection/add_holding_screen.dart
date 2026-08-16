@@ -11,6 +11,7 @@ import '../../domain/models/money.dart';
 import '../../domain/models/price_point.dart';
 import '../../ui/format/formats.dart';
 import '../../ui/theme/app_theme.dart';
+import '../../ui/widgets/catalog_image.dart';
 import '../../ui/widgets/common.dart';
 
 /// Zweistufiger Ablauf zum Hinzufügen einer Position (§5.3, Screen 3).
@@ -161,8 +162,8 @@ class _SearchStepState extends ConsumerState<_SearchStep> {
                         final card = cards[index];
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: CatalogThumbnail(item: card, width: 40),
-                          title: Text(card.displayName),
+                          leading: CatalogImage(item: card, width: 42),
+                          title: Text(card.fullLabel),
                           subtitle: Text(card.subtitle),
                           trailing: Icon(
                             Icons.chevron_right_rounded,
@@ -612,13 +613,13 @@ class _Header extends StatelessWidget {
 
     return Row(
       children: [
-        CatalogThumbnail(item: item, width: 56, quality: ImageQuality.high),
+        CatalogImage(item: item, width: 58, quality: ImageQuality.high),
         const SizedBox(width: Spacing.lg),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(item.displayName, style: context.texts.headlineMedium),
+              Text(item.fullLabel, style: context.texts.headlineMedium),
               const SizedBox(height: 2),
               Text(
                 item.subtitle,

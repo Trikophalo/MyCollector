@@ -106,7 +106,8 @@ void main() {
       await openCollection(tester);
 
       expect(find.byType(CollectionScreen), findsOneWidget);
-      expect(find.text('Glurak VMAX'), findsWidgets);
+      // Listentitel nennen jetzt Set-Kürzel und Nummer mit.
+      expect(find.textContaining('Glurak-ex (MEW 006)'), findsWidgets);
     });
 
     testWidgets('filtert auf gegradete Karten', (tester) async {
@@ -137,12 +138,41 @@ void main() {
 
       await tester.enterText(
         find.widgetWithText(TextField, 'In der Sammlung suchen'),
-        'Mew',
+        'Nachtara',
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Mew ex'), findsOneWidget);
-      expect(find.text('Glurak VMAX'), findsNothing);
+      expect(find.textContaining('Nachtara VMAX'), findsWidgets);
+      expect(find.textContaining('Glurak-ex'), findsNothing);
+    });
+
+    testWidgets('findet Karten über das Set-Kürzel', (tester) async {
+      await pumpApp(tester);
+      await openCollection(tester);
+
+      // Glurak-ex und Mew-ex stammen beide aus dem Set mit dem Kürzel MEW.
+      await tester.enterText(
+        find.widgetWithText(TextField, 'In der Sammlung suchen'),
+        'MEW',
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('(MEW '), findsWidgets);
+      expect(find.textContaining('Nachtara'), findsNothing);
+    });
+
+    testWidgets('findet eine Karte über Kürzel und Nummer', (tester) async {
+      await pumpApp(tester);
+      await openCollection(tester);
+
+      await tester.enterText(
+        find.widgetWithText(TextField, 'In der Sammlung suchen'),
+        'PFL 013',
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('Mega-Glurak X-ex (PFL 013)'), findsWidgets);
+      expect(find.textContaining('Mew-ex'), findsNothing);
     });
 
     testWidgets('erklärt einen Suchtreffer ohne Ergebnis', (tester) async {
@@ -162,7 +192,7 @@ void main() {
       await pumpApp(tester);
       await openCollection(tester);
 
-      await tester.tap(find.text('Glurak VMAX').first);
+      await tester.tap(find.textContaining('Glurak-ex').first);
       await tester.pumpAndSettle();
 
       expect(find.byType(HoldingDetailScreen), findsOneWidget);
@@ -181,12 +211,12 @@ void main() {
       expect(find.byType(AddHoldingScreen), findsOneWidget);
       expect(find.text('Was hast du?'), findsOneWidget);
 
-      await tester.enterText(find.byType(TextField).first, 'Glurak');
+      await tester.enterText(find.byType(TextField).first, 'Glurak-ex');
       await tester.pumpAndSettle();
 
-      expect(find.text('Glurak VMAX'), findsWidgets);
+      expect(find.textContaining('Glurak-ex (MEW 006)'), findsWidgets);
 
-      await tester.tap(find.text('Glurak VMAX').first);
+      await tester.tap(find.textContaining('Glurak-ex (MEW 006)').first);
       await tester.pumpAndSettle();
 
       expect(find.text('Details'), findsOneWidget);
@@ -200,9 +230,9 @@ void main() {
 
       await tester.tap(find.text('Erste Position hinzufügen'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField).first, 'Glurak');
+      await tester.enterText(find.byType(TextField).first, 'Glurak-ex');
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Glurak VMAX').first);
+      await tester.tap(find.textContaining('Glurak-ex (MEW 006)').first);
       await tester.pumpAndSettle();
 
       expect(find.text('Anbieter'), findsNothing);
@@ -221,9 +251,9 @@ void main() {
 
       await tester.tap(find.text('Erste Position hinzufügen'));
       await tester.pumpAndSettle();
-      await tester.enterText(find.byType(TextField).first, 'Miraidon');
+      await tester.enterText(find.byType(TextField).first, 'Pikachu-ex');
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Miraidon ex').first);
+      await tester.tap(find.textContaining('Pikachu-ex (SSP 057)').first);
       await tester.pumpAndSettle();
 
       await tester.enterText(

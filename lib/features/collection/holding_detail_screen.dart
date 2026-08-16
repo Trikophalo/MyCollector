@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/providers.dart';
-import '../../domain/models/catalog_item.dart';
 import '../../domain/models/holding.dart';
 import '../../domain/models/money.dart';
 import '../../domain/models/price_point.dart';
 import '../../domain/models/valuation.dart';
+import '../../domain/services/ebay_lookup.dart';
 import '../../domain/services/portfolio_service.dart';
 import '../../ui/format/formats.dart';
 import '../../ui/theme/app_theme.dart';
+import '../../ui/widgets/catalog_image.dart';
 import '../../ui/widgets/common.dart';
 
 /// Preisverlauf einer einzelnen Position.
@@ -82,13 +84,10 @@ class _DetailBody extends ConsumerWidget {
       ),
       children: [
         Center(
-          child: Hero(
-            tag: 'holding-${holding.id}',
-            child: CatalogThumbnail(
-              item: position.item,
-              width: 168,
-              quality: ImageQuality.high,
-            ),
+          child: ZoomableCatalogImage(
+            item: position.item,
+            heroTag: 'holding-${holding.id}',
+            width: 190,
           ),
         ),
         const SizedBox(height: Spacing.xl),
@@ -99,7 +98,9 @@ class _DetailBody extends ConsumerWidget {
         ),
         const SizedBox(height: Spacing.xs),
         Text(
-          position.subtitle,
+          position.reference.isEmpty
+              ? position.subtitle
+              : '${position.subtitle}  ·  ${position.reference}',
           textAlign: TextAlign.center,
           style: context.texts.bodyMedium?.copyWith(
             color: colors.labelSecondary,
@@ -195,6 +196,9 @@ class _DetailBody extends ConsumerWidget {
             ],
           ),
         ),
+        const SizedBox(height: Spacing.lg),
+
+        _EbayCard(position: position),
         const SizedBox(height: Spacing.xl),
 
         FilledButton.tonal(
@@ -331,6 +335,82 @@ class _DetailBody extends ConsumerWidget {
       await ref.read(collectionControllerProvider).deleteHolding(holding.id);
       if (context.mounted) Navigator.of(context).pop();
     }
+  }
+}
+
+/// Zugang zu echten eBay-Verkaufspreisen.
+///
+/// Öffnet eBay.de mit einer vorbereiteten Suche nach *verkauften* Angeboten,
+/// neueste zuerst. Eine direkte Anbindung ist nicht möglich: eBays einzige
+/// offizielle Schnittstelle für Verkaufspreise ist für neue Entwickler
+/// geschlossen (§3.6, Begründung in [EbayLookup]).
+class _EbayCard extends StatelessWidget {
+  const _EbayCard({required this.position});
+
+  final PositionValuation position;
+
+  Future<void> _open(BuildContext context, Uri url) async {
+    final opened = await launchUrl(url, mode: LaunchMode.externalApplication);
+    if (!opened && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('eBay konnte nicht geöffnet werden.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final holding = position.holding;
+
+    return SectionCard(
+      title: 'Marktabgleich',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Tatsächlich erzielte Preise siehst du direkt bei eBay. Den für '
+            'dich passenden Wert kannst du anschließend unten als eigenen '
+            'Preis übernehmen.',
+            style: context.texts.bodySmall?.copyWith(
+              color: colors.labelSecondary,
+            ),
+          ),
+          const SizedBox(height: Spacing.md),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _open(
+                    context,
+                    EbayLookup.soldListings(
+                      item: position.item,
+                      holding: holding,
+                    ),
+                  ),
+                  icon: const Icon(Icons.sell_rounded, size: 16),
+                  label: const Text('Verkauft'),
+                ),
+              ),
+              const SizedBox(width: Spacing.sm),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _open(
+                    context,
+                    EbayLookup.activeListings(
+                      item: position.item,
+                      holding: holding,
+                    ),
+                  ),
+                  icon: const Icon(Icons.storefront_rounded, size: 16),
+                  label: const Text('Angebote'),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 

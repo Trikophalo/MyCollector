@@ -6,6 +6,27 @@ import '../../domain/models/money.dart';
 import '../../domain/models/price_point.dart';
 import 'catalog_source.dart';
 
+/// Beschreibung eines Sets, wie sie nur der Set-Endpunkt liefert.
+///
+/// Die Kartenantwort enthält weder das offizielle Kürzel noch die Serie —
+/// beides wird aber gebraucht: das Kürzel für die Bezeichnung „(PFL 013)",
+/// die Serie für den Bildpfad.
+class TcgdexSetInfo {
+  const TcgdexSetInfo({
+    required this.id,
+    required this.name,
+    this.serieId = '',
+    this.abbreviation,
+    this.cardCount,
+  });
+
+  final String id;
+  final String name;
+  final String serieId;
+  final String? abbreviation;
+  final int? cardCount;
+}
+
 /// Katalog- und Preisquelle auf Basis von TCGdex (§3.3, §3.4).
 ///
 /// Gewählt, weil TCGdex als einzige geprüfte Quelle deutsche Kartennamen
@@ -13,12 +34,16 @@ import 'catalog_source.dart';
 /// ohne Schlüssel arbeitet, Bilder pro Sprache bereitstellt und seit Kurzem
 /// Cardmarket-Preise in EUR mitliefert.
 ///
-/// Zwei bekannte Eigenheiten der Quelle sind hier bewusst behandelt:
-/// 1. Ein deutsches Kartenbild existiert nicht immer — deshalb wird die
-///    englische Bild-URL als Rückfall mitgeführt.
-/// 2. Für manche Karten fehlen Preise ganz (ältere EX-/Full-Art-Karten, sehr
-///    neue Sets, Regionalexklusive). Fehlende Preise sind kein Fehlerfall,
-///    sondern führen zur nächsten Stufe der Bewertungs-Kaskade.
+/// Drei Eigenheiten der Quelle sind hier bewusst behandelt:
+/// 1. Ein Bild wird nur ausgeliefert, wenn für die abgefragte Sprache ein Scan
+///    existiert. Fehlt der deutsche, liefert die API **kein** Feld — die
+///    Rückfall-Adresse muss daher selbst gebildet werden, wofür die Serie
+///    nötig ist (siehe [TcgdexSetInfo]).
+/// 2. Die Trefferliste der Suche enthält nur Kennung, Nummer, Name und Bild —
+///    kein Set. Set-Angaben werden über die Kennung nachgeladen.
+/// 3. Für manche Karten fehlen Preise ganz (ältere EX-/Full-Art-Karten, sehr
+///    neue Sets, Regionalexklusive). Das ist kein Fehlerfall, sondern führt
+///    zur nächsten Stufe der Bewertungs-Kaskade.
 class TcgdexSource implements CatalogSource {
   TcgdexSource({Dio? dio, this.language = 'de'}) : _dio = dio ?? _defaultDio();
 
@@ -28,6 +53,10 @@ class TcgdexSource implements CatalogSource {
 
   /// Sprachcode des Katalogs. `de` liefert deutsche Namen und Bilder.
   final String language;
+
+  /// Set-Angaben ändern sich nach Erscheinen nicht mehr und werden deshalb für
+  /// die Dauer der Sitzung behalten.
+  final Map<String, TcgdexSetInfo?> _setCache = {};
 
   @override
   String get attribution => 'Kartendaten & Preise: TCGdex (Cardmarket)';
@@ -59,9 +88,20 @@ class TcgdexSource implements CatalogSource {
       },
     );
 
-    return data
-        .whereType<Map<String, dynamic>>()
-        .map(_cardFromBrief)
+    final briefs = data.whereType<Map<String, dynamic>>().toList();
+
+    // Set-Angaben einmal je vorkommendem Set nachladen, nicht je Karte.
+    final setIds = briefs
+        .map((json) => _setIdFrom(json))
+        .whereType<String>()
+        .toSet();
+    final sets = <String, TcgdexSetInfo?>{};
+    for (final setId in setIds) {
+      sets[setId] = await _setInfo(setId);
+    }
+
+    return briefs
+        .map((json) => _cardFromBrief(json, sets))
         .whereType<CatalogCard>()
         .toList();
   }
@@ -69,8 +109,13 @@ class TcgdexSource implements CatalogSource {
   @override
   Future<CatalogCardResult?> cardDetails(String id) async {
     final data = await _get<Map<String, dynamic>>('/$language/cards/$id');
-    final card = _cardFromDetail(data);
+
+    final setId = (data['set'] as Map<String, dynamic>?)?['id'] as String?;
+    final info = setId == null ? null : await _setInfo(setId);
+
+    final card = _cardFromDetail(data, info);
     if (card == null) return null;
+
     return CatalogCardResult(card: card, prices: _pricesFrom(data, card));
   }
 
@@ -93,50 +138,113 @@ class TcgdexSource implements CatalogSource {
     return points;
   }
 
+  /// Lädt Set-Angaben inklusive Kürzel und Serie.
+  Future<TcgdexSetInfo?> _setInfo(String setId) async {
+    if (_setCache.containsKey(setId)) return _setCache[setId];
+
+    try {
+      final data = await _get<Map<String, dynamic>>('/$language/sets/$setId');
+      final abbreviation = data['abbreviation'] as Map<String, dynamic>?;
+      final cardCount = data['cardCount'] as Map<String, dynamic>?;
+      final serie = data['serie'] as Map<String, dynamic>?;
+
+      final info = TcgdexSetInfo(
+        id: data['id'] as String? ?? setId,
+        name: data['name'] as String? ?? '',
+        serieId: serie?['id'] as String? ?? '',
+        abbreviation:
+            abbreviation?['official'] as String? ??
+            abbreviation?['localized'] as String?,
+        cardCount: (cardCount?['official'] ?? cardCount?['total']) as int?,
+      );
+      _setCache[setId] = info;
+      return info;
+    } on CatalogSourceException {
+      // Ohne Set-Angaben bleibt die Karte nutzbar, nur ohne Kürzel.
+      _setCache[setId] = null;
+      return null;
+    }
+  }
+
+  /// Leitet die Set-Kennung aus der Kartenkennung ab: `me02-013` → `me02`.
+  ///
+  /// Kann nicht einfach am ersten Bindestrich getrennt werden, weil
+  /// Set-Kennungen selbst welche enthalten dürfen.
+  String? _setIdFrom(Map<String, dynamic> json) {
+    final id = json['id'] as String?;
+    final localId = json['localId']?.toString();
+    if (id == null) return null;
+    if (localId != null && id.endsWith('-$localId')) {
+      return id.substring(0, id.length - localId.length - 1);
+    }
+    final index = id.lastIndexOf('-');
+    return index > 0 ? id.substring(0, index) : null;
+  }
+
   // --------------------------------------------------------------- Abbildung
 
-  CatalogCard? _cardFromBrief(Map<String, dynamic> json) {
+  CatalogCard? _cardFromBrief(
+    Map<String, dynamic> json,
+    Map<String, TcgdexSetInfo?> sets,
+  ) {
     final id = json['id'] as String?;
     final name = json['name'] as String?;
     if (id == null || name == null) return null;
 
-    final image = json['image'] as String?;
-    final setId = id.split('-').first;
+    final setId = _setIdFrom(json) ?? '';
+    final info = sets[setId];
 
     return CatalogCard(
       id: id,
       setId: setId,
-      setName: (json['set'] as Map<String, dynamic>?)?['name'] as String? ?? '',
+      setName: info?.name ?? '',
       localId: json['localId']?.toString() ?? '',
       nameEn: name,
       nameDe: language == 'de' ? name : null,
-      imageBase: image,
-      imageBaseEn: image == null ? null : _swapLanguage(image, 'en'),
+      serieId: info?.serieId ?? '',
+      setAbbreviation: info?.abbreviation,
+      setCardCount: info?.cardCount,
+      imageBase: json['image'] as String?,
     );
   }
 
-  CatalogCard? _cardFromDetail(Map<String, dynamic> json) {
+  CatalogCard? _cardFromDetail(
+    Map<String, dynamic> json,
+    TcgdexSetInfo? info,
+  ) {
     final id = json['id'] as String?;
     final name = json['name'] as String?;
     if (id == null || name == null) return null;
 
     final set = json['set'] as Map<String, dynamic>?;
     final cardCount = set?['cardCount'] as Map<String, dynamic>?;
-    final image = json['image'] as String?;
 
     return CatalogCard(
       id: id,
-      setId: set?['id'] as String? ?? id.split('-').first,
-      setName: set?['name'] as String? ?? '',
+      setId: set?['id'] as String? ?? info?.id ?? '',
+      setName: set?['name'] as String? ?? info?.name ?? '',
       localId: json['localId']?.toString() ?? '',
       nameEn: name,
       nameDe: language == 'de' ? name : null,
+      serieId: info?.serieId ?? _serieFromLogo(set?['logo'] as String?) ?? '',
+      setAbbreviation: info?.abbreviation,
       rarity: json['rarity'] as String?,
-      imageBase: image,
-      imageBaseEn: image == null ? null : _swapLanguage(image, 'en'),
-      setCardCount: (cardCount?['official'] ?? cardCount?['total']) as int?,
+      imageBase: json['image'] as String?,
+      setCardCount:
+          (cardCount?['official'] ?? cardCount?['total']) as int? ??
+          info?.cardCount,
       availableVariants: _variantsFrom(json['variants']),
     );
+  }
+
+  /// Zweiter Weg zur Serie: Sie steckt im Pfad des Set-Logos
+  /// (`.../de/{serie}/{set}/logo`). Greift, falls der Set-Endpunkt scheitert.
+  String? _serieFromLogo(String? logoUrl) {
+    if (logoUrl == null || logoUrl.isEmpty) return null;
+    final parts = Uri.tryParse(logoUrl)?.pathSegments;
+    // Erwartet: [sprache, serie, set, 'logo']
+    if (parts == null || parts.length < 4) return null;
+    return parts[parts.length - 3];
   }
 
   List<CardVariant> _variantsFrom(Object? raw) {
@@ -150,11 +258,6 @@ class TcgdexSource implements CatalogSource {
     ];
     return variants.isEmpty ? const [CardVariant.normal] : variants;
   }
-
-  /// Ersetzt den Sprachabschnitt einer Bild-URL, um den englischen Scan als
-  /// Rückfall zu erhalten.
-  String _swapLanguage(String url, String target) =>
-      url.replaceFirst(RegExp('/$language/'), '/$target/');
 
   /// Liest den Cardmarket-Block aus und erzeugt Preispunkte je Druckvariante.
   ///
@@ -223,7 +326,7 @@ class TcgdexSource implements CatalogSource {
       if (error.response?.statusCode == 404) {
         throw const CatalogSourceException('Nicht im Katalog gefunden');
       }
-      throw CatalogSourceException(
+      throw const CatalogSourceException(
         'TCGdex nicht erreichbar',
         isNetworkIssue: true,
       );

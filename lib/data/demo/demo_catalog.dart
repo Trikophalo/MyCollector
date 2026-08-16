@@ -14,158 +14,172 @@ import '../remote/catalog_source.dart';
 /// Beispieldaten werden nur geladen, wenn der Nutzer sie in den Einstellungen
 /// ausdrücklich anfordert. Eine Sammlung, die sich von selbst füllt, wäre das
 /// Gegenteil von Vertrauen (L3).
+///
+/// Alle Karten, Set-Kennungen, Kürzel und deutschen Namen stammen unverändert
+/// aus der TCGdex-Kartendatenbank. Dadurch stimmen auch die daraus gebildeten
+/// Bildadressen — anders als bei erfundenen Beispieldaten, bei denen jedes
+/// Bild ins Leere liefe.
 class DemoCatalogSource implements CatalogSource {
   const DemoCatalogSource();
 
   @override
-  String get attribution => 'Beispieldaten (offline)';
+  String get attribution => 'Beispieldaten (TCGdex-Kartendaten)';
 
   static const List<CatalogCard> cards = [
     CatalogCard(
-      id: 'swsh3-020',
-      setId: 'swsh3',
-      setName: 'Flammende Finsternis',
-      localId: '020',
-      nameEn: 'Charizard VMAX',
-      nameDe: 'Glurak VMAX',
-      rarity: 'Rare Holo VMAX',
-      setCardCount: 189,
+      id: 'me02-013',
+      setId: 'me02',
+      serieId: 'me',
+      setName: 'Fatale Flammen',
+      setAbbreviation: 'PFL',
+      localId: '013',
+      nameEn: 'Mega Charizard X ex',
+      nameDe: 'Mega-Glurak X-ex',
+      rarity: 'Double rare',
+      setCardCount: 94,
       availableVariants: [CardVariant.holo],
     ),
     CatalogCard(
-      id: 'swsh45-018',
-      setId: 'swsh45',
-      setName: 'Glänzendes Schicksal',
-      localId: '018',
-      nameEn: 'Pikachu V',
-      nameDe: 'Pikachu V',
-      rarity: 'Rare Holo V',
-      setCardCount: 72,
-      availableVariants: [CardVariant.holo, CardVariant.reverseHolo],
-    ),
-    CatalogCard(
-      id: 'sv3pt5-006',
-      setId: 'sv3pt5',
-      setName: 'Karmesin & Purpur 151',
+      id: 'sv03.5-006',
+      setId: 'sv03.5',
+      serieId: 'sv',
+      setName: '151',
+      setAbbreviation: 'MEW',
       localId: '006',
       nameEn: 'Charizard ex',
-      nameDe: 'Glurak ex',
-      rarity: 'Double Rare',
+      nameDe: 'Glurak-ex',
+      rarity: 'Double rare',
       setCardCount: 165,
       availableVariants: [CardVariant.holo],
     ),
     CatalogCard(
-      id: 'sv3pt5-151',
-      setId: 'sv3pt5',
-      setName: 'Karmesin & Purpur 151',
+      id: 'sv03.5-151',
+      setId: 'sv03.5',
+      serieId: 'sv',
+      setName: '151',
+      setAbbreviation: 'MEW',
       localId: '151',
       nameEn: 'Mew ex',
-      nameDe: 'Mew ex',
-      rarity: 'Double Rare',
+      nameDe: 'Mew-ex',
+      rarity: 'Double rare',
       setCardCount: 165,
       availableVariants: [CardVariant.holo],
     ),
     CatalogCard(
-      id: 'swsh12pt5-160',
-      setId: 'swsh12pt5',
+      id: 'swsh9-154',
+      setId: 'swsh9',
+      serieId: 'swsh',
+      setName: 'Strahlende Sterne',
+      setAbbreviation: 'BRS',
+      localId: '154',
+      nameEn: 'Charizard V',
+      nameDe: 'Glurak V',
+      rarity: 'Ultra Rare',
+      setCardCount: 172,
+      availableVariants: [CardVariant.holo],
+    ),
+    CatalogCard(
+      id: 'swsh12.5-160',
+      setId: 'swsh12.5',
+      serieId: 'swsh',
       setName: 'Zenit der Könige',
+      setAbbreviation: 'CRZ',
       localId: '160',
-      nameEn: 'Giratina VSTAR',
-      nameDe: 'Giratina VSTAR',
+      nameEn: 'Pikachu',
+      nameDe: 'Pikachu',
       rarity: 'Secret Rare',
       setCardCount: 159,
       availableVariants: [CardVariant.holo],
     ),
     CatalogCard(
-      id: 'sv2-091',
-      setId: 'sv2',
-      setName: 'Paldeas Schicksale',
-      localId: '091',
-      nameEn: 'Miraidon ex',
-      nameDe: 'Miraidon ex',
-      rarity: 'Double Rare',
-      setCardCount: 193,
-      availableVariants: [CardVariant.holo, CardVariant.reverseHolo],
+      id: 'sv08-057',
+      setId: 'sv08',
+      serieId: 'sv',
+      setName: 'Stürmische Funken',
+      setAbbreviation: 'SSP',
+      localId: '057',
+      nameEn: 'Pikachu ex',
+      nameDe: 'Pikachu-ex',
+      rarity: 'Double rare',
+      setCardCount: 191,
+      availableVariants: [CardVariant.normal],
     ),
     CatalogCard(
-      id: 'base1-004',
-      setId: 'base1',
-      setName: 'Basis-Set',
-      localId: '004',
-      nameEn: 'Charizard',
-      nameDe: 'Glurak',
-      rarity: 'Rare Holo',
-      setCardCount: 102,
-      availableVariants: [CardVariant.holo, CardVariant.firstEdition],
-    ),
-    CatalogCard(
-      id: 'swsh9-154',
-      setId: 'swsh9',
-      setName: 'Strahlende Sterne',
-      localId: '154',
-      nameEn: 'Arceus VSTAR',
-      nameDe: 'Arceus VSTAR',
+      id: 'swsh7-215',
+      setId: 'swsh7',
+      serieId: 'swsh',
+      setName: 'Drachenwandel',
+      setAbbreviation: 'EVS',
+      localId: '215',
+      nameEn: 'Umbreon VMAX',
+      nameDe: 'Nachtara VMAX',
       rarity: 'Secret Rare',
-      setCardCount: 172,
+      setCardCount: 203,
       availableVariants: [CardVariant.holo],
+    ),
+    CatalogCard(
+      id: 'sv04.5-091',
+      setId: 'sv04.5',
+      serieId: 'sv',
+      setName: 'Paldeas Schicksale',
+      setAbbreviation: 'PAF',
+      localId: '091',
+      nameEn: 'Ultra Ball',
+      nameDe: 'Hyperball',
+      rarity: 'Uncommon',
+      setCardCount: 91,
+      availableVariants: [CardVariant.normal, CardVariant.reverseHolo],
     ),
   ];
 
   static const List<SealedProduct> sealedProducts = [
     SealedProduct(
-      id: 'sealed-sv3pt5-display',
-      name: 'Karmesin & Purpur 151 Display',
+      id: 'sealed-sv03.5-display',
+      name: '151 Display',
       type: SealedProductType.display,
-      setId: 'sv3pt5',
-      setName: 'Karmesin & Purpur 151',
+      setId: 'sv03.5',
+      serieId: 'sv',
+      setName: '151',
     ),
     SealedProduct(
-      id: 'sealed-sv2-etb',
+      id: 'sealed-sv04.5-etb',
       name: 'Paldeas Schicksale Top-Trainer-Box',
       type: SealedProductType.eliteTrainerBox,
-      setId: 'sv2',
+      setId: 'sv04.5',
+      serieId: 'sv',
       setName: 'Paldeas Schicksale',
     ),
     SealedProduct(
-      id: 'sealed-swsh12pt5-display',
+      id: 'sealed-swsh12.5-display',
       name: 'Zenit der Könige Display',
       type: SealedProductType.display,
-      setId: 'swsh12pt5',
+      setId: 'swsh12.5',
+      serieId: 'swsh',
       setName: 'Zenit der Könige',
     ),
   ];
 
   /// Referenzpreise je Katalog-ID und Preisschlüssel, in Cent.
   static const Map<String, Map<String, int>> _referencePrices = {
-    'swsh3-020': {'raw:holo': 8500, 'PSA:10': 42000, 'PSA:9': 14500},
-    'swsh45-018': {'raw:holo': 1250, 'raw:reverse': 1800},
-    'sv3pt5-006': {'raw:holo': 4200, 'PSA:10': 19500},
-    'sv3pt5-151': {'raw:holo': 6800, 'PSA:10': 28000},
-    'swsh12pt5-160': {'raw:holo': 11500},
-    'sv2-091': {'raw:holo': 1950, 'raw:reverse': 2400},
-    'base1-004': {'raw:holo': 32000, 'PSA:9': 145000, 'PSA:10': 890000},
+    'me02-013': {'raw:holo': 9800, 'PSA:10': 38000},
+    'sv03.5-006': {'raw:holo': 4200, 'PSA:10': 19500, 'PSA:9': 7200},
+    'sv03.5-151': {'raw:holo': 6800, 'PSA:10': 28000},
     'swsh9-154': {'raw:holo': 5400},
-    'sealed-sv3pt5-display': {'sealed': 21900},
-    'sealed-sv2-etb': {'sealed': 5490},
-    'sealed-swsh12pt5-display': {'sealed': 34900},
+    'swsh12.5-160': {'raw:holo': 11500},
+    'sv08-057': {'raw:normal': 1950},
+    'swsh7-215': {'raw:holo': 32000, 'PSA:10': 145000},
+    'sv04.5-091': {'raw:normal': 180, 'raw:reverse': 640},
+    'sealed-sv03.5-display': {'sealed': 21900},
+    'sealed-sv04.5-etb': {'sealed': 5490},
+    'sealed-swsh12.5-display': {'sealed': 34900},
   };
 
   static List<CatalogItem> get allItems => [...cards, ...sealedProducts];
 
   @override
   Future<List<CatalogCard>> searchCards(String query, {int limit = 20}) async {
-    final needle = query.trim().toLowerCase();
-    if (needle.length < 2) return const [];
-
-    return cards
-        .where(
-          (card) =>
-              card.displayName.toLowerCase().contains(needle) ||
-              card.nameEn.toLowerCase().contains(needle) ||
-              card.setName.toLowerCase().contains(needle),
-        )
-        .take(limit)
-        .toList();
+    if (query.trim().length < 2) return const [];
+    return cards.where((card) => card.matches(query)).take(limit).toList();
   }
 
   @override
@@ -206,6 +220,7 @@ class DemoCatalogSource implements CatalogSource {
   /// versiegelten Produkten und einem manuell gesetzten Preis.
   static List<Holding> demoHoldings({required DateTime now}) {
     var counter = 0;
+
     Holding make({
       required String catalogId,
       required int quantity,
@@ -239,50 +254,45 @@ class DemoCatalogSource implements CatalogSource {
     }
 
     return [
+      make(catalogId: 'me02-013', quantity: 1, purchaseCents: 7400, daysAgo: 90),
       make(
-        catalogId: 'swsh3-020',
-        quantity: 1,
-        purchaseCents: 6500,
-        daysAgo: 240,
-      ),
-      make(
-        catalogId: 'swsh3-020',
-        quantity: 1,
-        purchaseCents: 32000,
-        daysAgo: 120,
-        grading: const Grading(Grader.psa, 10),
-      ),
-      make(
-        catalogId: 'sv3pt5-006',
+        catalogId: 'sv03.5-006',
         quantity: 3,
         purchaseCents: 3600,
         daysAgo: 300,
       ),
       make(
-        catalogId: 'sv3pt5-151',
+        catalogId: 'sv03.5-006',
+        quantity: 1,
+        purchaseCents: 15000,
+        daysAgo: 120,
+        grading: const Grading(Grader.psa, 10),
+      ),
+      make(
+        catalogId: 'sv03.5-151',
         quantity: 2,
         purchaseCents: 5200,
         daysAgo: 210,
       ),
       make(
-        catalogId: 'swsh12pt5-160',
+        catalogId: 'swsh12.5-160',
         quantity: 1,
         purchaseCents: 9800,
         daysAgo: 165,
       ),
       make(
-        catalogId: 'sv2-091',
+        catalogId: 'sv08-057',
         quantity: 4,
         purchaseCents: 2100,
         daysAgo: 95,
-        variant: CardVariant.reverseHolo,
+        variant: CardVariant.normal,
       ),
       make(
-        catalogId: 'base1-004',
+        catalogId: 'swsh7-215',
         quantity: 1,
         purchaseCents: 120000,
         daysAgo: 420,
-        grading: const Grading(Grader.psa, 9),
+        grading: const Grading(Grader.psa, 10),
         // Eigener Referenzpreis aus einem beobachteten Verkauf.
         manualPrice: const Money(158000),
       ),
@@ -293,21 +303,28 @@ class DemoCatalogSource implements CatalogSource {
         daysAgo: 60,
       ),
       make(
-        catalogId: 'sealed-sv3pt5-display',
+        catalogId: 'sv04.5-091',
+        quantity: 12,
+        purchaseCents: 150,
+        daysAgo: 45,
+        variant: CardVariant.reverseHolo,
+      ),
+      make(
+        catalogId: 'sealed-sv03.5-display',
         quantity: 2,
         purchaseCents: 15900,
         daysAgo: 330,
         type: HoldingType.sealed,
       ),
       make(
-        catalogId: 'sealed-sv2-etb',
+        catalogId: 'sealed-sv04.5-etb',
         quantity: 3,
         purchaseCents: 4990,
         daysAgo: 150,
         type: HoldingType.sealed,
       ),
       make(
-        catalogId: 'sealed-swsh12pt5-display',
+        catalogId: 'sealed-swsh12.5-display',
         quantity: 1,
         purchaseCents: 24500,
         daysAgo: 275,

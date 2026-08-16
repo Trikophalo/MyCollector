@@ -121,7 +121,7 @@ void main() {
     await tester.pumpAndSettle();
     await capture(tester, '06_hinzufuegen_suche');
 
-    await tester.tap(find.text('Glurak VMAX').first);
+    await tester.tap(find.textContaining('Mega-Glurak X-ex').first);
     await tester.pumpAndSettle();
     await tester.tap(find.text('Gegradet'));
     await tester.pumpAndSettle();
@@ -134,7 +134,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilterChip, 'Gegradet'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Glurak VMAX').first);
+    await tester.tap(find.textContaining('Glurak-ex (MEW 006)').first);
     await tester.pumpAndSettle();
     await capture(tester, '08_produktdetail');
   });

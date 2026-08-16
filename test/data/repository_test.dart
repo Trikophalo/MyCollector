@@ -325,7 +325,7 @@ void main() {
       expect(export['formatVersion'], 1);
       final holdings = export['holdings']! as List<Object?>;
       final first = holdings.single! as Map<String, Object?>;
-      expect(first['name'], 'Glurak VMAX');
+      expect(first['name'], 'Glurak VMAX (020)');
       expect(first['grader'], 'PSA');
       expect(first['grade'], 10.0);
       expect((export['snapshots']! as List<Object?>).length, 1);

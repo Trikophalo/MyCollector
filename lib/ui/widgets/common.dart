@@ -1,7 +1,5 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../domain/models/catalog_item.dart';
 import '../../domain/models/grading.dart';
 import '../../domain/models/money.dart';
 import '../../domain/models/valuation.dart';
@@ -172,80 +170,6 @@ class GradingBadge extends StatelessWidget {
           letterSpacing: 0.3,
           color: isTop ? colors.accent : colors.labelSecondary,
         ),
-      ),
-    );
-  }
-}
-
-/// Kartenbild mit Platzhalter.
-///
-/// Ein fehlendes Bild ist der Normalfall und kein Fehler: Nicht für jede Karte
-/// existiert ein deutscher Scan (§3.3). Der Platzhalter ist deshalb gestaltet,
-/// nicht bloß leer.
-class CatalogThumbnail extends StatelessWidget {
-  const CatalogThumbnail({
-    required this.item,
-    this.width = 44,
-    this.quality = ImageQuality.low,
-    super.key,
-  });
-
-  final CatalogItem? item;
-  final double width;
-  final ImageQuality quality;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    final height = width * 1.4;
-    final url = item?.imageUrl(quality: quality);
-    final radius = BorderRadius.circular(width * 0.12);
-
-    Widget placeholder() {
-      final label = switch (item) {
-        CatalogCard(:final localId) => localId,
-        SealedProduct(:final type) => type.label.substring(0, 1),
-        _ => '?',
-      };
-
-      return Container(
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          borderRadius: radius,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colors.accent.withValues(alpha: 0.20),
-              colors.accent.withValues(alpha: 0.06),
-            ],
-          ),
-          border: Border.all(color: colors.separator, width: 0.5),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          label,
-          style: context.texts.labelSmall?.copyWith(
-            color: colors.accent,
-            fontWeight: FontWeight.w700,
-            fontSize: width * 0.22,
-          ),
-        ),
-      );
-    }
-
-    if (url == null) return placeholder();
-
-    return ClipRRect(
-      borderRadius: radius,
-      child: CachedNetworkImage(
-        imageUrl: url,
-        width: width,
-        height: height,
-        fit: BoxFit.cover,
-        placeholder: (_, _) => placeholder(),
-        errorWidget: (_, _, _) => placeholder(),
       ),
     );
   }

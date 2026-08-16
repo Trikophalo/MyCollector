@@ -6,6 +6,7 @@ import '../../domain/models/catalog_item.dart';
 import '../../domain/services/portfolio_service.dart';
 import '../../ui/format/formats.dart';
 import '../../ui/theme/app_theme.dart';
+import '../../ui/widgets/catalog_image.dart';
 import '../../ui/widgets/common.dart';
 import 'holding_detail_screen.dart';
 
@@ -58,8 +59,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       if (!matchesFilter) return false;
       if (query.isEmpty) return true;
 
-      return position.displayName.toLowerCase().contains(query) ||
-          position.subtitle.toLowerCase().contains(query);
+      // Trifft auch auf Set-Kürzel und Kartennummer, damit „PFL 013"
+      // genauso funktioniert wie „Glurak".
+      return position.matches(query);
     }).toList();
 
     filtered.sort(
@@ -308,7 +310,7 @@ class _PositionTile extends StatelessWidget {
             padding: const EdgeInsets.all(Spacing.md),
             child: Row(
               children: [
-                CatalogThumbnail(item: position.item, width: 44),
+                CatalogImage(item: position.item, width: 46),
                 const SizedBox(width: Spacing.md),
                 Expanded(
                   child: Column(
@@ -318,11 +320,15 @@ class _PositionTile extends StatelessWidget {
                         children: [
                           Flexible(
                             child: Text(
-                              position.displayName,
-                              maxLines: 1,
+                              position.fullLabel,
+                              // Zwei Zeilen, damit das Set-Kürzel bei langen
+                              // Kartennamen nicht als Erstes wegfällt — es ist
+                              // der Teil, über den gesucht wird.
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: context.texts.bodyLarge?.copyWith(
                                 fontWeight: FontWeight.w600,
+                                height: 1.2,
                               ),
                             ),
                           ),
@@ -431,7 +437,7 @@ class _PositionGridCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Center(
-                  child: CatalogThumbnail(
+                  child: CatalogImage(
                     item: position.item,
                     width: 92,
                     quality: ImageQuality.high,
@@ -445,6 +451,14 @@ class _PositionGridCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: context.texts.bodySmall?.copyWith(
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+              Text(
+                position.reference,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.texts.labelSmall?.copyWith(
+                  color: colors.labelTertiary,
                 ),
               ),
               Text(

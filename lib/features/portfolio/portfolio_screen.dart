@@ -7,6 +7,7 @@ import '../../domain/services/chart_series.dart';
 import '../../domain/services/portfolio_service.dart';
 import '../../ui/format/formats.dart';
 import '../../ui/theme/app_theme.dart';
+import '../../ui/widgets/catalog_image.dart';
 import '../../ui/widgets/common.dart';
 import '../collection/holding_detail_screen.dart';
 import 'widgets/portfolio_chart.dart';
@@ -355,7 +356,7 @@ class _MoverTile extends StatelessWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: Spacing.lg),
-      leading: CatalogThumbnail(item: position.item, width: 36),
+      leading: CatalogImage(item: position.item, width: 38),
       title: Text(
         position.displayName,
         maxLines: 1,

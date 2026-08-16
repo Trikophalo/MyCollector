@@ -17,7 +17,12 @@ class CardEntries extends Table {
   TextColumn get nameDe => text().nullable()();
   TextColumn get rarity => text().nullable()();
   TextColumn get imageBase => text().nullable()();
-  TextColumn get imageBaseEn => text().nullable()();
+
+  /// Serie des Sets (z. B. `sv`), Teil des Bildpfads.
+  TextColumn get serieId => text().withDefault(const Constant(''))();
+
+  /// Offizielles Set-Kürzel, z. B. `PFL`.
+  TextColumn get setAbbreviation => text().nullable()();
   IntColumn get setCardCount => integer().nullable()();
 
   /// Kommaseparierte Variantencodes, z. B. `normal,reverse`.
@@ -35,6 +40,7 @@ class SealedEntries extends Table {
   TextColumn get name => text()();
   TextColumn get type => text()();
   TextColumn get setId => text().nullable()();
+  TextColumn get serieId => text().nullable()();
   TextColumn get setName => text().nullable()();
   TextColumn get language => text().withDefault(const Constant('DE'))();
   TextColumn get image => text().nullable()();
@@ -135,11 +141,21 @@ class AppDatabase extends _$AppDatabase {
       );
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async => m.createAll(),
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        // Serie und Set-Kürzel ergänzt: Die Serie gehört zum Bildpfad, das
+        // Kürzel zur Bezeichnung „(PFL 013)". Der Katalog ist reiner Cache,
+        // die Spalten füllen sich beim nächsten Abruf von selbst.
+        await m.addColumn(cardEntries, cardEntries.serieId);
+        await m.addColumn(cardEntries, cardEntries.setAbbreviation);
+        await m.addColumn(sealedEntries, sealedEntries.serieId);
+      }
+    },
     beforeOpen: (details) async {
       // Fremdschlüssel sind in SQLite standardmäßig aus.
       await customStatement('PRAGMA foreign_keys = ON');

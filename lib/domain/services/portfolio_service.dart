@@ -22,7 +22,22 @@ class PositionValuation {
 
   String get displayName => item?.displayName ?? 'Unbekanntes Objekt';
 
+  /// Vollständige Bezeichnung inklusive Set-Kürzel, z. B.
+  /// „Mega-Glurak X-ex (PFL 013)".
+  String get fullLabel => item?.fullLabel ?? displayName;
+
+  /// „PFL 013" — leer bei versiegelten Produkten.
+  String get reference => switch (item) {
+    CatalogCard(:final reference) => reference,
+    _ => '',
+  };
+
   String get subtitle => item?.subtitle ?? holding.catalogId;
+
+  /// Sucht über Name, Set, Kürzel und Nummer.
+  bool matches(String query) =>
+      item?.matches(query) ??
+      holding.catalogId.toLowerCase().contains(query.trim().toLowerCase());
 
   /// Gesamtwert dieser Position (Wert je Stück × Menge).
   Money get totalValue => valuation.unitValue.times(holding.quantity);
