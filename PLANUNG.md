@@ -8,7 +8,20 @@
 
 ## 0. Das Wichtigste in Kürze
 
-_[Wird nach Abschluss der API-Recherche finalisiert — Zusammenfassung der Kernentscheidungen.]_
+Sechs Entscheidungen tragen dieses Projekt. Alles Weitere folgt aus ihnen:
+
+| # | Entscheidung | Kern der Begründung |
+|---|--------------|---------------------|
+| 1 | **Flutter** für iOS, Android, macOS und Windows | Einzige Option 2026, die alle vier Ziele aus einer Codebasis mit stabilem First-Party-Tooling bedient. Das gewünschte *eigene* Apple-like Design ist genau die Stärke eines selbstzeichnenden Renderers (§4.1). |
+| 2 | **TCGdex** als Katalog- *und* Preisquelle | Einziger geprüfter Anbieter mit deutschen Kartennamen — nachgezählt **86,9 % aller Karten, ~99 % der modernen Ären**. Kostenlos, ohne Schlüssel, MIT-lizenziert, self-hostbar, liefert Bilder pro Sprache und inzwischen Cardmarket-Preise in EUR (§3.3, §3.4). |
+| 3 | **Kein Direktweg zu Cardmarket** — und das ist eingeplant | Die offizielle API nimmt keine neuen Entwickler an, ihre AGB verlangen für die Anzeige von Preisen eine schriftliche Vereinbarung. Alle kommerziellen „Cardmarket-APIs" sind unlizenzierte Scraper. Konsequenz: Provider-Abstraktion und eigenes Preisarchiv ab Tag 1 (§3.4, L5). |
+| 4 | **Gegradete Karten: manuell zuerst, Automatik später** | Es existiert **weltweit keine EUR-native Graded-Preisquelle**; alle sind US/USD. Und eBays Verkaufspreis-API ist für Indie-Entwickler faktisch geschlossen. Deshalb: manueller Preis als erstklassiges Feature plus eBay-**Angebote** über die Browse API (kostenlos, EUR, legal), Automatik als P1 (§3.6). |
+| 5 | **Local-first ohne Account** | Die Sammlung gehört dem Nutzer und liegt in SQLite auf dem Gerät. Ein schlanker Preis-Service schützt API-Schlüssel und schreibt Tagesabschlüsse; Cloud-Sync ist eine spätere Option, keine Voraussetzung (L2, §4.2). |
+| 6 | **Ehrliche Preise statt schöner Zahlen** | Jeder Wert trägt Quelle und Stand, US-Werte sind gekennzeichnet, fehlende Preise zeigen „—" statt „0 €", und die Wertkurve erklärt, dass sie erst ab heute entsteht (L3, §4.5). |
+
+**Laufende Datenkosten im MVP: 0 €.** TCGdex, die eBay Browse API und die EZB-Wechselkurse sind kostenlos. Geld wird erst dort nötig, wo die Datenlage am schlechtesten ist — bei gegradeten und versiegelten Produkten (10–30 $/Monat, P1).
+
+> **Umsetzungsstand:** Dieses Dokument beschreibt nicht nur den Plan — der MVP ist gebaut. Stand der Dinge in §9.
 
 ---
 
@@ -247,7 +260,7 @@ Dies ist der heikelste Teil der Anforderung — mit einem Ergebnis, das die ursp
 
 **Empfehlung: Flutter.** Begründung entlang der Anforderungen:
 
-1. **Vier Zielplattformen, eine Codebasis, ein Renderer.** Flutter (stabil: 3.44, Mai 2026) ist 2026 die einzige Option, bei der iOS, Android, macOS **und** Windows aus derselben Codebasis mit First-Party-Tooling stabil bedient werden. Genau das verlangt die Desktop-Anforderung. React Native ist auf iOS/Android mindestens ebenbürtig, aber der Desktop-Pfad ist ehrlich betrachtet ein zweiter Codepfad: `react-native-macos` hängt der Core-Version ~4 Minor-Releases hinterher, Expo unterstützt Desktop nicht, und der praktikable Ausweg (react-native-web in Electron/Tauri verpackt) verwässert das Ziel „möglichst viel gemeinsamer Code".
+1. **Vier Zielplattformen, eine Codebasis, ein Renderer.** Flutter (stabil: **3.47.0 vom 11.08.2026 mit Dart 3.13**, die im Projekt verwendete Fassung) ist 2026 die einzige Option, bei der iOS, Android, macOS **und** Windows aus derselben Codebasis mit First-Party-Tooling stabil bedient werden. Genau das verlangt die Desktop-Anforderung. React Native ist auf iOS/Android mindestens ebenbürtig, aber der Desktop-Pfad ist ehrlich betrachtet ein zweiter Codepfad: `react-native-macos` hängt der Core-Version ~4 Minor-Releases hinterher, Expo unterstützt Desktop nicht, und der praktikable Ausweg (react-native-web in Electron/Tauri verpackt) verwässert das Ziel „möglichst viel gemeinsamer Code".
 2. **Das gewünschte Design ist ein *eigenes* Apple-like Designsystem** (L4) — nicht das Nachahmen nativer Standard-Controls. Flutters „Owned-Canvas"-Rendering (alles wird selbst gezeichnet: Blur, Radien, 120-fps-Animationen auf ProMotion) ist exakt dafür die Stärke. Damit relativiert sich Flutters bekannte Schwäche, dass die mitgelieferten Cupertino-Widgets Apples neue „Liquid Glass"-Designsprache (iOS 26) erst mit dem für Ende 2026 angekündigten Umbau nachziehen: Wir bauen ohnehin eigene Komponenten; wo echte native Optik punktuell gewünscht ist, existieren Brücken-Pakete mit nativen Views.
 3. **Der Chart ist machbar und bewährt.** Finanz-Charts mit Touch-Scrubbing und Haptik sind in Flutter ein gelöstes Problem (fl_chart bzw. eigener CustomPainter mit `HapticFeedback`) — hier hat React Native mit spezialisierten Bibliotheken (wagmi-charts, aus Krypto-Portfolio-Apps entstanden) zwar das beste Fertigangebot, der Vorsprung rechtfertigt aber nicht den Desktop-Nachteil.
 4. **Lokale Datenbank: Drift** (typsicheres SQLite mit reaktiven Queries, alle Plattformen inkl. Desktop). Wichtiger Recherchebefund: **Isar und Hive sind faktisch verwaist** — Drift ist 2026 die wartungssichere Wahl.
@@ -260,14 +273,14 @@ Dies ist der heikelste Teil der Anforderung — mit einem Ergebnis, das die ursp
 
 | Baustein | Wahl | Anmerkung |
 |----------|------|-----------|
-| Sprache/Framework | Dart 3.12 / Flutter ≥ 3.44 | iOS, Android, macOS, Windows aus einer Codebasis |
-| Lokale DB | **Drift** (SQLite) | reaktive Streams treiben die UI; Migrationen versioniert |
-| State Management | Riverpod | testbar, kompiliersicher; Alternative: Bloc (Geschmacksfrage) |
-| Chart | fl_chart als Basis, bei Bedarf eigener CustomPainter | Scrubbing/Haptik/Morphing → §5.4 |
-| HTTP | dio (+ Retry-Interceptor) | Backoff/Circuit-Breaker → §4.5 |
-| Navigation | go_router | Deep-Links (P1: Alarme → Detail) |
+| Sprache/Framework | Dart 3.13 / Flutter 3.47 | iOS, Android, macOS, Windows aus einer Codebasis |
+| Lokale DB | **Drift** (SQLite) | reaktive Streams treiben die UI; Migrationen versioniert. **Nicht Isar/Hive** — beide sind faktisch verwaist |
+| State Management | Riverpod 2.x | testbar, kompiliersicher; Alternative: Bloc (Geschmacksfrage) |
+| Chart | **eigener CustomPainter** | In der Umsetzung fiel die Wahl gegen fl_chart: Scrubbing mit Fadenkreuz, gestrichelte Referenzlinie, Morphing und Einstandslinie sind selbst gezeichnet kürzer und genauer steuerbar als gegen eine fremde API konfiguriert (§5.4) |
+| HTTP | dio (+ Retry-Interceptor) | Backoff 2/4/8 s, keine Wiederholung bei 4xx → §4.5 |
+| Navigation | Navigator mit benannten Routen | Für drei Tabs und zwei Detailrouten ist go_router unnötiger Ballast; sinnvoll wird er erst mit Deep-Links (P1: Preisalarm → Detail) |
 | Bilder | cached_network_image + Disk-Cache | → §4.5 Caching |
-| i18n | intl / ARB | Deutsch zuerst, Englisch vorbereitet |
+| i18n | intl (Zahlen/Währung), eigene Datumsformate | `NumberFormat` arbeitet ohne Initialisierung, `DateFormat` bräuchte für Deutsch geladene Sprachdaten — die wenigen Datumsformate sind direkt formuliert |
 
 ### 4.2 Systemarchitektur im Überblick
 
@@ -628,6 +641,61 @@ Phasen statt Datumszusagen; jede Phase endet mit einem benutzbaren Stand.
 
 ---
 
+## 9. Umsetzungsstand
+
+Der MVP ist gebaut. Was in diesem Repository liegt:
+
+| Bereich | Umgesetzt | Prüfung |
+|---------|-----------|---------|
+| **Domänenlogik** | Cent-genaue Geldarithmetik, sechsstufige Preis-Kaskade, Portfolio-Kennzahlen, Top-Bewegungen, Aufschlüsselungen, Tagesabschlüsse mit Lückenfüllung, Chart-Zeitreihen mit LTTB-Ausdünnung | 37 Tests |
+| **Persistenz** | SQLite über Drift: Katalog-Cache, Bestand, append-only Preisarchiv, Snapshots, JSON-Vollexport | 15 Tests gegen echte In-Memory-Datenbank |
+| **Datenquellen** | TCGdex-Client hinter dem Provider-Interface (Retry/Backoff, Bild-Rückfall auf Englisch, Cardmarket-EUR-Preise), Beispielquelle für den Betrieb ohne Netz | Antwortformate abgebildet; Live-Abruf steht noch aus (→ §3.7, Punkt 1) |
+| **Formatierung** | Deutsche Beträge, Prozente und Datumsangaben; Eingabe akzeptiert „12,50", „12.50" und „1.234,56 €" | 13 Tests |
+| **Oberfläche** | Portfolio mit interaktivem Chart, Sammlung (Liste/Raster, Filter, Sortierung, Swipe), zweistufiger Add-Flow mit Roh/Graded-Umschalter, Produktdetail mit Preis-Override, Einstellungen mit Hell/Dunkel/System | 18 Widget-Tests + 11 Bildvergleiche |
+| **Plattformen** | Projektziele für iOS, Android, macOS und Windows angelegt; Tab-Leiste auf dem Telefon, Seitenleiste ab 900 px | Layoutwechsel getestet |
+
+**Gesamt: 93 automatisierte Tests, alle grün** (`flutter analyze` ohne Befund).
+
+Drei Fehler sind erst durch die Tests aufgefallen und wurden behoben — sie stehen hier, weil sie zeigen, wofür die Tests da sind:
+
+1. `SectionCard` legte eine eingefärbte Fläche über enthaltene Listenzeilen und hätte deren Tipp-Rückmeldung verschluckt.
+2. Das Button-Theme setzte über `Size.fromHeight` eine unendliche Mindestbreite — jeder Button innerhalb einer Zeile sprengte das Layout.
+3. Die Betragseingabe entfernte Punkte pauschal als Tausendertrenner und las „12.50" als **1250 €**.
+
+**Was bewusst noch aussteht:** der erste Live-Abruf gegen TCGdex (die API ist aus der Entwicklungsumgebung heraus nicht erreichbar, der Client ist gegen die dokumentierten Antwortformate gebaut), der Preis-Service als Backend (§4.3), sowie alles ab P1 — Graded-Automatik, Sealed-Preise, Cloud-Sync.
+
+---
+
 ## Anhang A — Quellen & API-Referenzen
 
-_[Wird nach Abschluss der Recherche befüllt: Links zu allen API-Dokumentationen, Preisseiten und ToS, jeweils mit Abrufdatum.]_
+Alle Angaben am **16. August 2026** abgerufen. Mit ⚠️ markierte Punkte im Text konnten nicht abschließend verifiziert werden und gehören vor Entwicklungsbeginn geprüft (→ §3.7).
+
+**Kartendaten & Katalog**
+- TCGdex — Kartendatenbank (Quelle der ausgezählten deutschen Abdeckung): `github.com/tcgdex/cards-database` · Dokumentation: `github.com/tcgdex/documentation`, `tcgdex.dev` (FAQ, Assets, Markets & Prices, SDKs) · API: `api.tcgdex.net/v2`
+- Pokémon TCG API — `pokemontcg.io`, `docs.pokemontcg.io` (Rate Limits, Card Object), `dev.pokemontcg.io/terms` · Daten: `github.com/PokemonTCG/pokemon-tcg-data` · Fehlerbericht zu fehlenden Cardmarket-Preisen: `github.com/PokemonTCG/pokemon-tcg-data/issues/586`
+- Scrydex — `scrydex.com`, `scrydex.com/pricing`, `scrydex.com/docs` (Pokémon: Englisch und Japanisch), `scrydex.com/terms`
+- PokéWallet — `pokewallet.io/api-docs` · Limitless TCG — `limitlesstcg.com/limitless-card-database`, `docs.limitlesstcg.com/developer`
+
+**Preisdaten**
+- Cardmarket — `help.cardmarket.com/en/cardmarket-api` (keine neuen Zugänge), `cardmarket.com/en/Policies/GeneralTermsAndConditions` (Anzeige von Preisen nur mit schriftlicher Vereinbarung), `apiv2.cardmarket.com/ws/documentation`
+- CardTrader — `cardtrader.com/en/docs/api/full/reference`, Sealed-Kategorien unter `cardtrader.com/en/games/pokemon/categories/pokemon-booster-box/blueprints`
+- JustTCG — `justtcg.com/docs`, `justtcg.com/supported-games` · TCGCSV — `tcgcsv.com`, `tcgcsv.com/faq` · TCGplayer — `developer.tcgplayer.com`, `help.tcgplayer.com` (API-Bedingungen)
+- PriceCharting — `pricecharting.com/api-documentation`, `pricecharting.com/page/terms-of-service` (Nutzung in Dritt-Apps nur mit schriftlicher Genehmigung), `sportscardspro.com/api-documentation` (Feldformat, keine Historie)
+- PokemonPriceTracker — `pokemonpricetracker.com/psa-pokemon-card-api`, `pokemonpricetracker.com/pricing` · GemRate — `gemrate.com/partner` (Populationen, keine Preise)
+- Wechselkurse — `frankfurter.dev` (EZB-Referenzkurse, kostenlos, ohne Schlüssel)
+
+**eBay**
+- Browse API — `developer.ebay.com/api-docs/buy/browse/overview.html` · Zustands-Deskriptoren für gegradete Karten: `developer.ebay.com/cms/files/connect-2023/condition_grading_trading_cards.pdf`
+- Marketplace Insights API — `developer.ebay.com/api-docs/buy/marketplace_insights/…` („Limited Release", für neue Nutzer geschlossen)
+- Abschaltung der Finding API zum 05.02.2025 — `developer.ebay.com/updates/newsletter/q3_2024`
+- Lizenzbedingungen — `developer.ebay.com/join/api-license-agreement` (begrenzte Zwischenspeicherung, keine Vermischung mit fremden Inhalten in einer Anzeige)
+
+**Rechtliches (Deutschland/EU)**
+- Datenbankherstellerrecht — §§ 87a ff. UrhG · BGH, Urteil vom 22.06.2011 – I ZR 159/10 (automatisiertes Auslesen von Datenbanken)
+- Wettbewerbsrecht — BGH, Urteil vom 30.04.2014 – I ZR 224/12 (Screen Scraping nicht per se unlauter, sofern keine technischen Schutzmaßnahmen umgangen werden)
+
+**Plattform & Werkzeuge**
+- Flutter — `github.com/flutter/flutter` (stabil 3.47.0, 11.08.2026; Dart 3.13) · Cupertino und iOS-26-Design: `github.com/flutter/flutter/issues/170310`
+- Datenbank-Landschaft in Flutter 2026 (Drift statt Isar/Hive) — `luci-studio.com/blog/the-flutter-local-database-landscape-in-2026-…`
+- React Native 0.85 / Expo SDK 56, New Architecture — `docs.expo.dev/guides/new-architecture/` · Desktop-Stand: `github.com/microsoft/react-native-macos/releases`, `microsoft.github.io/react-native-windows/support/`
+- Compose Multiplatform — `github.com/JetBrains/compose-multiplatform/releases` (1.11.x, 2026) · Tauri 2 — `v2.tauri.app/blog/tauri-20/` · Skip — `skip.dev/docs/status/`

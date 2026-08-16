@@ -1,10 +1,38 @@
 @Tags(['screenshots'])
 library;
 
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../app_harness.dart';
+
+/// Bildvergleich mit kleiner Toleranz.
+///
+/// Einzelne Screens zeigen Zeitangaben („Stand: heute, 08:12"), die zwischen
+/// Aufnahme und Prüfung weiterlaufen. Ein exakter Pixelvergleich würde daran
+/// scheitern, ohne dass sich am Aufbau etwas geändert hätte. Ein Prozent
+/// Abweichung fängt das ab und meldet echte Änderungen weiterhin.
+class _TolerantComparator extends LocalFileComparator {
+  _TolerantComparator(super.testFile);
+
+  static const double _tolerance = 0.01;
+
+  @override
+  Future<bool> compare(Uint8List imageBytes, Uri golden) async {
+    final result = await GoldenFileComparator.compareLists(
+      imageBytes,
+      await getGoldenBytes(golden),
+    );
+
+    if (result.passed || result.diffPercent <= _tolerance) return true;
+
+    throw FlutterError(
+      await generateFailureOutput(result, golden, basedir),
+    );
+  }
+}
 
 /// Nimmt Bildschirmfotos der wichtigsten Screens auf.
 ///
@@ -12,7 +40,13 @@ import '../app_harness.dart';
 /// erzeugt; ohne den Schalter prüfen sie, dass sich die Darstellung nicht
 /// unbeabsichtigt verändert hat.
 void main() {
-  setUpAll(loadTestFonts);
+  setUpAll(() async {
+    final current = goldenFileComparator as LocalFileComparator;
+    goldenFileComparator = _TolerantComparator(
+      Uri.parse('${current.basedir}screens_test.dart'),
+    );
+    await loadTestFonts();
+  });
 
   /// Zeichnet für die Dauer eines Tests echte Schatten.
   ///
