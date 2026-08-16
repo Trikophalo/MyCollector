@@ -1,0 +1,57 @@
+name: Web-Vorschau veröffentlichen
+
+# Baut die Flutter-Web-Version bei jedem Push auf diesen Branch und
+# veröffentlicht sie über GitHub Pages. Dient ausschließlich als schneller
+# Blick auf die Oberfläche im Browser (§4.1) — die eigentlichen Zielplattformen
+# sind iOS, Android, macOS und Windows.
+#
+# Einmalige Voraussetzung: Settings → Pages → Source auf "GitHub Actions"
+# stellen. Danach läuft die Veröffentlichung automatisch bei jedem Push.
+
+on:
+  push:
+    branches: [claude/pokemon-collection-app-architecture-xg9x57]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - run: flutter pub get
+
+      - run: dart run build_runner build --delete-conflicting-outputs
+
+      # base-href muss dem Projektseiten-Pfad entsprechen:
+      # https://<owner>.github.io/<repo>/
+      - run: flutter build web --release --base-href /${{ github.event.repository.name }}/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
