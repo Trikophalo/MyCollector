@@ -90,7 +90,137 @@ Priorisierung in drei Stufen: **P0 = MVP** (ohne das Feature ist die App nicht s
 
 ## 3. Datenquellen: API-Vergleich & Empfehlung
 
-_[Dieser Abschnitt wird nach Abschluss der Live-Recherche (Stand August 2026) befüllt: Vergleich TCGdex, Pokémon TCG API (pokemontcg.io), Scrydex, Cardmarket-API, CardTrader, JustTCG, PriceCharting, eBay-APIs u. a. — inkl. Preismodellen, Rate Limits, Lizenzbedingungen, Sprachunterstützung, Bildern und Graded-Tauglichkeit, jeweils mit Quellenangabe.]_
+> **Recherchestand: 16. August 2026.** Alle Aussagen mit Quellen im Anhang A. Wo eine Angabe nicht zweifelsfrei verifizierbar war, ist sie mit ⚠️ markiert — diese Punkte gehören vor Entwicklungsbeginn geprüft (→ §7).
+
+### 3.1 Vier getrennte Aufgaben — nicht eine API
+
+Die App braucht nicht „eine Pokémon-API", sondern vier verschiedene Datenleistungen mit sehr unterschiedlicher Marktlage:
+
+| # | Aufgabe | Marktlage (Kurzfassung) |
+|---|---------|--------------------------|
+| A | **Katalog & Bilder** (Kartennamen deutsch, Sets, Nummern, Bilder) | Gut gelöst, kostenlos verfügbar |
+| B | **Marktpreise Rohkarten, EU/EUR** | Nur indirekt verfügbar — offizielle Cardmarket-API ist zu |
+| C | **Preise versiegelte Produkte** | Dünn; EU/EUR nur über einen Marktplatz-Zugang |
+| D | **Preise gegradeter Karten (PSA/BGS/CGC)** | Nur US/USD, ausschließlich kostenpflichtig/lizenzpflichtig |
+
+### 3.2 Gesamtübersicht der geprüften Anbieter
+
+| Anbieter | Deutsche Kartennamen | Bilder | Roh-Preise EU (EUR) | Sealed | Graded | Kosten | Zugang | Lizenz/ToS-Hinweis |
+|----------|:---:|:---:|:---:|:---:|:---:|--------|--------|--------------------|
+| **TCGdex** | ✅ **86,9 % aller Karten; 99 % der modernen Ären** | ✅ pro Sprache | ✅ Cardmarket-Preise in EUR, täglich | ❌ ⚠️ | ❌ | **kostenlos** | ohne API-Key | **MIT-Lizenz**, self-hostbar; Herkunft des Cardmarket-Feeds nicht offengelegt ⚠️ |
+| **pokemontcg.io** | ❌ nur Englisch (strukturell belegt) | ✅ | ⚠️ vorhanden, aber für neuere Sets defekt (offener Bug seit 02/2025) | ❌ | ❌ | kostenlos (1.000/Tag ohne Key, 20.000/Tag mit Key), **Free-Tier läuft aus** | API-Key | Nachfolger ist das kostenpflichtige Scrydex |
+| **Scrydex** | ❌ **nur Englisch + Japanisch** | ✅ | ⚠️ Cardmarket-Abdeckung unverifiziert | ⚠️ nicht dokumentiert | ✅ PSA/BGS/CGC/TAG/ACE + **Preishistorie** | ab **29 $/Monat** (5.000 Credits), kein Free Tier | Self-Service | kommerzielle API, für Apps gebaut; Caching ausdrücklich erwünscht |
+| **PokéWallet** | ⚠️ keine Lokalisierung erkennbar | ✅ | ✅ Cardmarket + TCGplayer | ⚠️ | ❌ | kostenlos (100/h, 1.000/Tag) | API-Key | neuer, unerprobter Anbieter; Betreiber/ToS nicht ermittelbar ⚠️ |
+| **Limitless TCG** | ✅ auf der Website | ✅ Website | ❌ | ❌ | ❌ | kostenlos | – | öffentliche API ist **turnierbezogen**; kein dokumentierter Katalog-Endpunkt ⚠️ |
+| **Cardmarket (offiziell)** | ✅ | – | ✅ *die* EU-Referenz | ✅ | ❌ | – | **geschlossen für neue Entwickler** | Anzeige von Preisen nur mit schriftlicher Vereinbarung |
+| **CardTrader** | ✅ (Sprache als Attribut) | ✅ | ✅ Live-Angebote in Cent + Währung | ✅ **inkl. Booster Boxes/ETBs** | ❌ | kostenloses JWT | Self-Service, aber **Preisdaten-Nutzung genehmigungspflichtig** | Markt-/Preis-APIs „auf Anfrage", Einzelfallprüfung |
+| **JustTCG** | ⚠️ | – | ⚠️ v1 US-lastig; „Multi-Region" erst v2-Beta | ✅ | ✅ (v2-Beta) | Free 1.000 Calls/Monat; ab 19 $/Monat | API-Key | jung (2025), Free-Tier bereits einmal geändert |
+| **PriceCharting** | ❌ faktisch nur EN/JP | – | ❌ US/USD | ✅ | ✅ **feinste Grade-Abstufung** | **6 $/Monat** | Token nach Abo | ⚠️ **Nutzung in Dritt-Apps nur mit ausdrücklicher schriftlicher Genehmigung**; Attribution + Backlink Pflicht |
+| **PokemonPriceTracker** | – | – | ✅ Cardmarket (EUR) für Rohkarten | ⚠️ | ✅ PSA 8/9/10 aus eBay-Verkäufen + Population | Free 100 Credits/Tag; ab ~10 $/Monat | Self-Service | kleiner Anbieter; eigene eBay-Datenlizenz nicht offengelegt ⚠️ |
+| **TCGCSV** | ❌ | – | ❌ USD (TCGplayer-Spiegel) | ✅ | ❌ | kostenlos | offener Download | Weiterverbreitung von TCGplayer-Daten ohne erkennbare Lizenz — Graubereich |
+| **TCGplayer** | ❌ | ✅ | ❌ US/USD | ✅ | ❌ | – | **seit ~Ende 2024 für Neue geschlossen** | – |
+| **eBay Browse API** | – | ✅ | ✅ **aktuelle Angebote** auf ebay.de in EUR | ✅ | ✅ Filter nach Grader/Note möglich | kostenlos, 5.000 Calls/Tag | OAuth, einfach | keine **Verkaufs**preise; Anzeige-/Caching-Regeln |
+| **eBay Marketplace Insights** | – | – | – | – | ✅ echte Verkaufspreise (90 Tage) | kostenlos | ❌ **„Limited Release", für neue Nutzer geschlossen** | praktisch unerreichbar für Indie-Entwickler |
+| **Frankfurter (FX)** | – | – | – | – | – | kostenlos, ohne Key | offen | EZB-Referenzkurse |
+
+### 3.3 Kartendaten & Bilder → **Empfehlung: TCGdex**
+
+**TCGdex** ist für dieses Projekt die klare Wahl und der einzige geprüfte Anbieter, der die Kernanforderung „deutsche Kartennamen" überhaupt erfüllt.
+
+**Die deutsche Abdeckung wurde direkt in der Quelldatenbank ausgezählt** (nicht aus Marketingangaben übernommen): **20.554 von 23.639 Karten (86,9 %) haben einen deutschen Namen.** Nach Ären aufgeschlüsselt zeigt sich, dass die Lücken fast ausschließlich Vintage betreffen:
+
+| Ära | Deutsche Namen | Ära | Deutsche Namen |
+|-----|:---:|-----|:---:|
+| **Mega-Entwicklung** (aktuell) | **99,9 %** | Sonne & Mond | 93,8 % |
+| **Schwert & Schild** | **99,0 %** | Schwarz & Weiß | 81,8 % |
+| **Karmesin & Purpur** | **98,9 %** | XY | 80,7 % |
+| Diamant & Perl / EX / Neo | 94–100 % | Base | 67,8 % |
+| TCG Pocket | 49,5 % | Gym / Legendary Collection | **0 %** |
+
+Für eine App, die den modernen Sammelmarkt bedient, ist das praktisch Vollabdeckung. Die 0-%-Sets (Gym, Legendary Collection) sind Vintage-Nischen, die über den englischen Namen als Fallback erfasst werden.
+
+Weitere Argumente:
+
+- **Kostenlos, ohne API-Key**, keine veröffentlichten harten Rate Limits (Bitte um rücksichtsvolle Nutzung und lokales Caching — das tun wir ohnehin, → §4.5).
+- **Bilder pro Sprache** über ein festes CDN-Schema: `assets.tcgdex.net/{sprache}/{serie}/{set}/{nummer}/{qualität}.{format}` mit `high`/`low` und `png`/`webp`/`jpg`. Die API liefert die Basis-URL, Qualität und Format hängt die App an — praktisch für Thumbnails vs. Detailansicht. **Wichtig:** Ein deutsches Bild existiert nur, wo ein deutscher Scan beigesteuert wurde; die App braucht daher einen **Bild-Fallback auf Englisch** ⚠️.
+- **MIT-Lizenz und per Docker self-hostbar** — der stärkste verfügbare Schutz gegen den Bus-Faktor (→ T1). Fällt das Projekt aus, kann der Katalog selbst betrieben werden.
+- **Sehr aktiv gepflegt:** Datenrepository zuletzt am 15.08.2026 aktualisiert, die im Juli 2026 erschienenen Sets sind enthalten.
+- **Bonus:** liefert seit Kurzem auch Preise (→ §3.4).
+
+**Ein Detail mit Konsequenz für den Tech-Stack:** TCGdex bietet SDKs für JavaScript/TypeScript, Python, Java, Kotlin, PHP, Rust, Swift und Zig — **aber kein Dart/Flutter-SDK**. Die App spricht die REST-API daher direkt an (`api.tcgdex.net/v2/de/...`). Das ist unproblematisch — ein eigener, schlanker Client ist ohnehin die bessere Wahl, weil er exakt das Provider-Interface aus L5 bedient statt eine fremde Abstraktion hineinzuziehen.
+
+**Warum nicht die Alternativen:** *pokemontcg.io* ist **strukturell englischsprachig** (die Datenbasis enthält ausschließlich `cards/en`) — für deutsche Sammler damit disqualifiziert, trotz des vorhandenen offiziellen Dart-SDKs; zudem läuft der freie Tarif Richtung kostenpflichtigem Nachfolger aus. *Scrydex* führt Pokémon ausdrücklich nur in **Englisch und Japanisch** — es wäre bezahlter Rückschritt bei der Kernanforderung. *PokéWallet* existiert als API (entgegen erster Annahme), ist aber ohne erkennbaren Betreiber, ohne Lokalisierung und ohne Betriebshistorie kein Fundament. *Limitless TCG* zeigt deutsche Kartennamen auf der Website, seine öffentliche API ist jedoch turnierbezogen; ein dokumentierter Katalog-Endpunkt ließ sich nicht finden ⚠️ — allenfalls als manuelle Gegenprobe für deutsche Namen nutzbar.
+
+### 3.4 Marktpreise Rohkarten (EU) → **Empfehlung: TCGdex-Preisfeed, mit bewusst geplantem Ausweichpfad**
+
+**Der zentrale Befund: Es gibt 2026 keinen lizenzierten Direktweg zu Cardmarket-Preisen für eine neue App.** Die offizielle Cardmarket-API nimmt keine neuen Anträge an; ihre AGB erlauben die API nur zur Verwaltung eigener Inhalte, und die *Darstellung* von Karten und Preisen setzt eine vorherige schriftliche Vereinbarung voraus. Sämtliche kommerziellen „Cardmarket-APIs" im Netz sind unlizenzierte Scraper — als Architekturabhängigkeit ausgeschlossen (→ R3).
+
+**Der pragmatische Weg:** TCGdex liefert inzwischen **Cardmarket-Preise in EUR, täglich aktualisiert** (Trend, Durchschnitte, Tiefstpreise, 7-/30-Tage-Historie, getrennt nach Holo/Non-Holo) direkt in der Kartenantwort — kostenlos, ohne Key. Damit deckt eine einzige Integration Katalog, Bilder **und** EU-Preise ab, was den MVP erheblich vereinfacht.
+
+**Damit verbundene Risiken — bewusst und benannt:**
+- Die Herkunft/Lizenzierung des Cardmarket-Feeds legt TCGdex nicht offen ⚠️. Es ist dieselbe Konstruktion, die bei pokemontcg.io für neuere Sets bereits gebrochen ist (offener Fehlerbericht seit Februar 2025, unbeantwortet).
+- Lücken bei älteren EX-/Full-Art-Karten, sehr neuen Releases und Regionalexklusiven.
+- Community-Projekt ohne Zusagen zur Verfügbarkeit.
+
+**Konsequenz für die Architektur (nicht optional):** Der Preis-Provider ist strikt hinter dem Provider-Interface (L5) gekapselt, jeder Preis wird mit Quelle und Zeitstempel im eigenen Archiv persistiert (→ §4.4). Fällt TCGdex aus oder bricht der Feed, ist der Wechsel eine Konfigurations-, keine Umbauarbeit. Als vorbereitete Ausweichpfade gelten: **PokemonPriceTracker** (liefert für Rohkarten ebenfalls Cardmarket-EUR-Preise, Free-Tier 100 Credits/Tag, ab ~10 $/Monat) und **CardTrader** (EU-Marktplatz, s. u.).
+
+### 3.5 Versiegelte Produkte (Sealed)
+
+Hier ist die Datenlage am dünnsten — und das prägt die MVP-Entscheidung:
+
+- **CardTrader** ist die einzige gefundene **EUR-native API-Quelle für Sealed** (eigene Kategorie mit Booster-Box-„Blueprints", ETBs etc.). Zugang: kostenloses JWT im Self-Service — **aber** die Nutzung der Markt-/Preisdaten ist ausdrücklich genehmigungspflichtig („auf Anfrage", Einzelfallprüfung durch das Team). Zudem liefert CardTrader **Angebotspreise einzelner Händler**, keinen aggregierten Trendpreis: Median/Tiefstpreis müssten selbst berechnet werden.
+- **JustTCG** und **TCGCSV** führen Sealed, aber US-lastig in USD (TCGCSV zusätzlich mit ungeklärter Weiterverbreitungslizenz — Graubereich, für ein Release nicht empfehlenswert).
+- **TCGdex** führt nach aktueller Dokumentationslage nur Einzelkarten ⚠️.
+
+**Empfehlung:** Im **MVP** werden Sealed-Produkte als „eigenes Produkt" mit manuellem Preis erfasst (→ §2.1) — das ist ehrlicher und schneller als eine halbgare Automatik. Parallel wird früh eine **Anfrage an CardTrader** zur Freigabe der Preisdaten-Nutzung gestellt; fällt sie positiv aus, wird CardTrader in P1 die automatische Sealed-Quelle (EUR, EU-Markt). Als Zwischenlösung kann eine kuratierte Liste der 50–100 gängigsten Produkte mit halbautomatischer Pflege dienen.
+
+### 3.6 Gegradete Karten (PSA/BGS/CGC) & der eBay-Fallback
+
+Dies ist der heikelste Teil der Anforderung — mit einem Ergebnis, das die ursprüngliche Idee korrigiert.
+
+**Befund 1: Es existiert weltweit keine EUR-native Preisquelle für gegradete Karten.** Sämtliche gefundenen Graded-Quellen sind US-Markt in USD. Für die App heißt das: Graded-Werte werden über EZB-Kurs umgerechnet und in der UI **als US-Marktwert gekennzeichnet** (→ §4.5, T7). Das ist inhaltlich sogar vertretbar, weil der Slab-Markt international und stark US-dominiert ist.
+
+**Befund 2: Der direkte „eBay-Verkaufspreis" ist für Indie-Entwickler nicht legal abrufbar.**
+
+| eBay-Weg | Status 2026 | Eignung |
+|----------|-------------|---------|
+| **Finding API** (`findCompletedItems`) | seit 05.02.2025 **abgeschaltet** | ✗ existiert nicht mehr |
+| **Marketplace Insights API** (echte Verkäufe, 90 Tage) | „Limited Release", laut eBay **für neue Nutzer geschlossen**; Entwicklerberichte zeigen durchgängig Ablehnung/Schweigen bei Indie-Anfragen | ✗ nicht einplanbar |
+| **Browse API** (aktive Angebote) | offen, OAuth, **kostenlos 5.000 Calls/Tag**, funktioniert auf **ebay.de in EUR**; gegradete Karten filterbar über Zustands-Deskriptoren (Kategorie 183454, Zustand „Graded" + Grader/Note) | ✅ nutzbar — aber **Angebots-, keine Verkaufspreise** |
+| Scraping der Sold-Listings | AGB-Verstoß + Datenbankherstellerrecht (§§ 87a ff. UrhG) + Anti-Bot-Realität | ✗ ausgeschlossen (→ R3) |
+
+**Befund 3: Wer echte eBay-*Verkaufs*preise anzeigt, tut das über lizenzierte Aggregatoren.** Genau diese Aggregatoren sind der saubere Weg zum gewünschten Fallback:
+
+| Option | Was sie liefert | Kosten | Haken |
+|--------|-----------------|--------|-------|
+| **PriceCharting** | Aus eBay-**Verkäufen** abgeleitete Preise je Grade (Roh, Grade 1–9.5, PSA 10, BGS 10, CGC 10, SGC 10) — die feinste Abstufung am Markt; auch Sealed | **6 $/Monat** | ⚠️ **ToS: Nutzung in für Dritte zugänglicher Software nur mit ausdrücklicher schriftlicher Genehmigung**; Attribution + sichtbarer Backlink Pflicht; **keine Preishistorie** über die API (nur aktueller Wert); deutsche Karten faktisch nicht katalogisiert |
+| **Scrydex** | PSA/BGS/CGC/TAG/ACE **inkl. Preishistorie** und Population Reports; kommerziell für Apps konzipiert | ab **29 $/Monat** | kein Free Tier; Cardmarket-/DE-Abdeckung unverifiziert ⚠️ |
+| **PokemonPriceTracker** | **PSA 8/9/10 aus eBay-Completed-Listings** (wöchentlich) **plus Cardmarket-EUR für Rohkarten** — deckt B und D in einem | Free 100 Credits/Tag; ab ~10 $/Monat | kleiner Anbieter; eigene eBay-Datenlizenz nicht offengelegt ⚠️; Preistarife widersprüchlich dokumentiert ⚠️ |
+| **JustTCG v2** | PSA/BGS/CGC als eigene Varianten, „Multi-Region" beworben | ab 19 $/Monat | Beta, EU-Bezug unbelegt ⚠️ |
+
+**Empfehlung für die Graded-Bepreisung:**
+
+- **MVP:** Keine Graded-Automatik. Stattdessen (a) manueller Preis-Override als vollwertiges Feature, (b) optional der **eBay-Browse-API-Block** im Produktdetail: „Aktuelle Angebote auf eBay.de: 340 € – 520 € (12 Treffer, PSA 9)" — kostenlos, legal, EUR, und für die Preiseinschätzung praktisch fast so hilfreich wie Verkaufspreise. Wichtig: Als **Angebotspreise** beschriften, nicht als Verkaufspreise, und in einem optisch getrennten, mit eBay attribuierten Block darstellen (die eBay-Lizenz untersagt das Vermischen von eBay-Inhalten mit anderen Quellen in einer gemeinsamen Anzeige).
+- **P1, in dieser Reihenfolge zu prüfen:** ① **PokemonPriceTracker** testen (Free Tier, deckt Graded *und* EU-Rohpreise ab — bester Kosten-Nutzen-Schnitt für genau diese App); ② falls Qualität nicht reicht: **Scrydex** (teurer, aber mit Historie und klarem kommerziellem Lizenzrahmen); ③ **PriceCharting** nur nach schriftlicher Genehmigung — das 6-$-Abo allein reicht rechtlich **nicht** aus, um die Preise in der App anzuzeigen.
+- **Dauerhaft:** Der manuelle Override bleibt erstklassig. Bei gegradeten Karten ist die eigene Marktkenntnis des Sammlers oft besser als jede API — die App soll das unterstützen statt bevormunden.
+
+### 3.7 Empfohlene Quellen-Matrix
+
+| Anwendungsfall | MVP | Ausbaustufe P1 | Ausweichpfad |
+|----------------|-----|----------------|--------------|
+| Kartenkatalog DE + Bilder | **TCGdex** (kostenlos) | – | pokemontcg.io; TCGdex self-hosted |
+| Preise Rohkarten EU | **TCGdex-Cardmarket-Feed** (kostenlos) | – | PokemonPriceTracker; CardTrader |
+| Preise Sealed | **manuell** (eigenes Produkt) | CardTrader (nach Freigabe) | JustTCG/TCGCSV + FX, als „US-Markt" gekennzeichnet |
+| Preise Graded | **manuell** + eBay-Browse-Angebote (EUR) | PokemonPriceTracker → Scrydex | PriceCharting (nur mit schriftlicher Genehmigung) |
+| Währungsumrechnung | **Frankfurter** (EZB, kostenlos) | – | EZB-XML direkt |
+
+**Laufende Kosten:** MVP **0 €** an Datenquellen (TCGdex + eBay Browse + Frankfurter sind kostenlos) zuzüglich Backend-Hosting (im Free Tier startbar). P1 realistisch **10–30 $/Monat** für die Graded-/Sealed-Automatik. Das ist die entscheidende strategische Aussage: Der MVP ist ohne Datenkosten betreibbar, und die einzige Stelle, an der Geld nötig wird, ist genau die Funktion mit der schlechtesten Datenlage.
+
+**Vor Entwicklungsbeginn zu erledigen (Blocker für §3):**
+1. TCGdex-Preisfeed mit ~200 eigenen Karten querbeet auf Trefferquote und Aktualität testen (auch neueste Sets).
+2. Anfrage an CardTrader wegen Freigabe der Markt-/Preisdaten stellen (lange Vorlaufzeit einplanen).
+3. eBay-Entwicklerkonto anlegen und die Zustands-Deskriptor-IDs für Grader/Note auf **EBAY_DE** praktisch verifizieren ⚠️ (die IDs sind dokumentiert, ihr Verhalten auf dem deutschen Marktplatz nicht).
+4. Aktuelle Volltexte der ToS von TCGdex, eBay und (falls relevant) PriceCharting/Scrydex lesen und die Punkte Caching-Dauer, Attribution und kommerzielle Nutzung schriftlich festhalten.
 
 ---
 
