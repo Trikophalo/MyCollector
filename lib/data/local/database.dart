@@ -112,8 +112,27 @@ class SnapshotEntries extends Table {
 )
 class AppDatabase extends _$AppDatabase {
   /// [executor] wird in Tests mit einer In-Memory-Datenbank belegt.
+  /// Der `web:`-Parameter ist auf nativen Plattformen wirkungslos, aber im
+  /// Web-Build zwingend erforderlich — ohne ihn bricht `driftDatabase()` dort
+  /// mit einem `ArgumentError` ab. Die beiden referenzierten Dateien liegen
+  /// unter `web/` und müssen zur `sqlite3`-Paketversion passen (aktuell
+  /// 3.5.1 aus pubspec.lock): `sqlite3.wasm` stammt unverändert aus
+  /// https://github.com/simolus3/sqlite3.dart/releases/tag/sqlite3-3.5.1,
+  /// `drift_worker.js` unverändert aus dem `drift`-Paket
+  /// (`package:drift/drift_worker.js` im Paket-Root). Bei einem Versions-Bump
+  /// von `sqlite3` muss `sqlite3.wasm` gegen die passende Release-Version
+  /// ausgetauscht werden.
   AppDatabase([QueryExecutor? executor])
-    : super(executor ?? driftDatabase(name: 'mycollector'));
+    : super(
+        executor ??
+            driftDatabase(
+              name: 'mycollector',
+              web: DriftWebOptions(
+                sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+                driftWorker: Uri.parse('drift_worker.js'),
+              ),
+            ),
+      );
 
   @override
   int get schemaVersion => 1;
