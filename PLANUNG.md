@@ -98,7 +98,46 @@ _[Dieser Abschnitt wird nach Abschluss der Live-Recherche (Stand August 2026) be
 
 ### 4.1 Plattformstrategie: Framework-Wahl für Mobile + Desktop
 
-_[Detailvergleich und Versionsstände werden nach Abschluss der Framework-Recherche ergänzt.]_
+**Anforderungsprofil:** iOS zuerst mit Apple-like *eigenem* Design (nicht native Standard-Controls), interaktiver Finanz-Chart mit Scrubbing + Haptik, Android, **plus** Desktop macOS *und* Windows — mit maximal gemeinsamem Code; Offline-SQLite; mittlere App-Komplexität.
+
+**Vergleich (Stand August 2026, Quellen → Anhang A):**
+
+| Kriterium | **Flutter** | React Native + Expo | Kotlin/Compose Multiplatform | Tauri v2 | Skip |
+|---|---|---|---|---|---|
+| iOS-Designtreue (Custom-HIG-Look) | ◕ sehr gut (eigener Renderer, Blur/120 fps) | ● sehr gut (echte native Primitive) | ◑ Material-first, HIG selbst bauen | ○ WebView-Look | ● perfekt (echtes SwiftUI) |
+| Android | ● | ◕ | ● | ◑ | ◑ jung |
+| Desktop macOS | ◕ stabil seit 2022 | ○ Fork hinkt 4 Versionen hinterher | ◕ reif | ● exzellent | ○ separat zu pflegen |
+| Desktop Windows | ◕ stabil | ◑ MS-Fork, näher an Core | ◕ reif | ● exzellent | ✗ keins |
+| Interaktive Charts (Scrubbing/Haptik) | ● fl_chart / eigener Painter, gelöst | ● beste Fertigbibliotheken (Victory Native, wagmi-charts) | ◑ Ökosystem-Lücke, selbst bauen | ◑ Web-Charts | ◑ unklar |
+| Offline-DB | ◕ **Drift** (SQLite) | ◕ expo-sqlite/OP-SQLite | ● SQLDelight/Room-KMP | ◕ SQLite-Plugin | ◑ |
+| Code-Teilung über alle 4 Ziele | ● eine Codebasis, ein Renderer | ◑ Desktop = zweiter Pfad | ◕ | ◕ | ○ |
+| Ökosystem/Community | ◕ sehr groß | ● am größten (JS/TS) | ◑ kleiner | ◑ | ○ Ein-Anbieter-Risiko |
+
+*(● = stark · ◕ = gut · ◑ = mit Einschränkungen · ○ = schwach · ✗ = nicht vorhanden)*
+
+**Empfehlung: Flutter.** Begründung entlang der Anforderungen:
+
+1. **Vier Zielplattformen, eine Codebasis, ein Renderer.** Flutter (stabil: 3.44, Mai 2026) ist 2026 die einzige Option, bei der iOS, Android, macOS **und** Windows aus derselben Codebasis mit First-Party-Tooling stabil bedient werden. Genau das verlangt die Desktop-Anforderung. React Native ist auf iOS/Android mindestens ebenbürtig, aber der Desktop-Pfad ist ehrlich betrachtet ein zweiter Codepfad: `react-native-macos` hängt der Core-Version ~4 Minor-Releases hinterher, Expo unterstützt Desktop nicht, und der praktikable Ausweg (react-native-web in Electron/Tauri verpackt) verwässert das Ziel „möglichst viel gemeinsamer Code".
+2. **Das gewünschte Design ist ein *eigenes* Apple-like Designsystem** (L4) — nicht das Nachahmen nativer Standard-Controls. Flutters „Owned-Canvas"-Rendering (alles wird selbst gezeichnet: Blur, Radien, 120-fps-Animationen auf ProMotion) ist exakt dafür die Stärke. Damit relativiert sich Flutters bekannte Schwäche, dass die mitgelieferten Cupertino-Widgets Apples neue „Liquid Glass"-Designsprache (iOS 26) erst mit dem für Ende 2026 angekündigten Umbau nachziehen: Wir bauen ohnehin eigene Komponenten; wo echte native Optik punktuell gewünscht ist, existieren Brücken-Pakete mit nativen Views.
+3. **Der Chart ist machbar und bewährt.** Finanz-Charts mit Touch-Scrubbing und Haptik sind in Flutter ein gelöstes Problem (fl_chart bzw. eigener CustomPainter mit `HapticFeedback`) — hier hat React Native mit spezialisierten Bibliotheken (wagmi-charts, aus Krypto-Portfolio-Apps entstanden) zwar das beste Fertigangebot, der Vorsprung rechtfertigt aber nicht den Desktop-Nachteil.
+4. **Lokale Datenbank: Drift** (typsicheres SQLite mit reaktiven Queries, alle Plattformen inkl. Desktop). Wichtiger Recherchebefund: **Isar und Hive sind faktisch verwaist** — Drift ist 2026 die wartungssichere Wahl.
+
+**Bewusst in Kauf genommene Nachteile von Flutter:** Dart statt TypeScript (kleinerer Talentpool als JS, aber schnell erlernbar); kein „gratis" natives iOS-Verhalten — Details wie Navigations-Swipe-Physik müssen bewusst nachgebaut/geprüft werden; Cupertino-/Liquid-Glass-Rückstand wie oben beschrieben (durch eigenes Designsystem neutralisiert).
+
+**Zweitplatzierter für ein anderes Szenario:** Wäre Desktop verhandelbar (nur iOS+Android), fiele die Wahl auf **React Native + Expo** (RN 0.85 / Expo SDK 56, New Architecture seit SDK 55 Standard; Coinbase als Beleg für Finanz-UX in Produktionsqualität). Kotlin/Compose Multiplatform (iOS stabil seit Mai 2025, heute 1.11.x) ist produktionsreif, aber Material-zentriert und im Chart-Ökosystem am dünnsten. Tauri v2 bleibt eine exzellente Desktop-Shell, ist aber als Primär-Framework einer iOS-first-App mit 120-fps-Anspruch (WebView-UI) ungeeignet. Skip (SwiftUI→Android) liefert perfekte iOS-Treue, scheitert aber an fehlendem Windows-Support und Ein-Anbieter-Risiko.
+
+**Empfohlener Stack (Flutter):**
+
+| Baustein | Wahl | Anmerkung |
+|----------|------|-----------|
+| Sprache/Framework | Dart 3.12 / Flutter ≥ 3.44 | iOS, Android, macOS, Windows aus einer Codebasis |
+| Lokale DB | **Drift** (SQLite) | reaktive Streams treiben die UI; Migrationen versioniert |
+| State Management | Riverpod | testbar, kompiliersicher; Alternative: Bloc (Geschmacksfrage) |
+| Chart | fl_chart als Basis, bei Bedarf eigener CustomPainter | Scrubbing/Haptik/Morphing → §5.4 |
+| HTTP | dio (+ Retry-Interceptor) | Backoff/Circuit-Breaker → §4.5 |
+| Navigation | go_router | Deep-Links (P1: Alarme → Detail) |
+| Bilder | cached_network_image + Disk-Cache | → §4.5 Caching |
+| i18n | intl / ARB | Deutsch zuerst, Englisch vorbereitet |
 
 ### 4.2 Systemarchitektur im Überblick
 
