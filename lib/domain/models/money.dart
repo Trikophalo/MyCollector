@@ -10,9 +10,9 @@ enum Currency {
   final String symbol;
 
   static Currency fromCode(String code) => Currency.values.firstWhere(
-        (c) => c.code.toUpperCase() == code.toUpperCase(),
-        orElse: () => Currency.eur,
-      );
+    (c) => c.code.toUpperCase() == code.toUpperCase(),
+    orElse: () => Currency.eur,
+  );
 }
 
 /// Geldbetrag in ganzzahligen Cent.

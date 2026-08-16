@@ -37,13 +37,13 @@ class PortfolioSnapshot {
       DateTime(moment.year, moment.month, moment.day);
 
   PortfolioSnapshot copyWith({DateTime? date}) => PortfolioSnapshot(
-        portfolioId: portfolioId,
-        date: date ?? this.date,
-        totalValue: totalValue,
-        cardsValue: cardsValue,
-        sealedValue: sealedValue,
-        invested: invested,
-      );
+    portfolioId: portfolioId,
+    date: date ?? this.date,
+    totalValue: totalValue,
+    cardsValue: cardsValue,
+    sealedValue: sealedValue,
+    invested: invested,
+  );
 
   @override
   String toString() =>

@@ -46,39 +46,48 @@ void main() {
     int purchaseCents = 1000,
     HoldingType type = HoldingType.card,
     Money? manualPrice,
-  }) =>
-      Holding(
-        id: id,
-        portfolioId: 'p1',
-        type: type,
-        catalogId: catalogId,
-        quantity: quantity,
-        purchaseDate: DateTime(2026, 1, 10),
-        createdAt: DateTime(2026, 1, 10),
-        purchasePrice: Money(purchaseCents),
-        priceMode: manualPrice == null ? PriceMode.auto : PriceMode.manual,
-        manualPrice: manualPrice,
-        manualPriceSetAt: manualPrice == null ? null : now,
-      );
+  }) => Holding(
+    id: id,
+    portfolioId: 'p1',
+    type: type,
+    catalogId: catalogId,
+    quantity: quantity,
+    purchaseDate: DateTime(2026, 1, 10),
+    createdAt: DateTime(2026, 1, 10),
+    purchasePrice: Money(purchaseCents),
+    priceMode: manualPrice == null ? PriceMode.auto : PriceMode.manual,
+    manualPrice: manualPrice,
+    manualPriceSetAt: manualPrice == null ? null : now,
+  );
 
   PriceBook pricesFor(Map<String, int> centsByCatalogId) => PriceBook([
-        for (final entry in centsByCatalogId.entries)
-          PricePoint.eur(
-            catalogId: entry.key,
-            priceKey: entry.key.startsWith('sealed')
-                ? PriceKey.sealed
-                : PriceKey.raw(CardVariant.normal),
-            source: PriceSource.tcgdexCardmarket,
-            value: Money(entry.value),
-            capturedAt: now,
-          ),
-      ]);
+    for (final entry in centsByCatalogId.entries)
+      PricePoint.eur(
+        catalogId: entry.key,
+        priceKey: entry.key.startsWith('sealed')
+            ? PriceKey.sealed
+            : PriceKey.raw(CardVariant.normal),
+        source: PriceSource.tcgdexCardmarket,
+        value: Money(entry.value),
+        capturedAt: now,
+      ),
+  ]);
 
   test('summiert Wert und Einstand über Mengen hinweg', () {
     final summary = service.evaluate(
       holdings: [
-        holding(id: 'h1', catalogId: 'swsh3-136', quantity: 3, purchaseCents: 2000),
-        holding(id: 'h2', catalogId: 'sv1-245', quantity: 2, purchaseCents: 500),
+        holding(
+          id: 'h1',
+          catalogId: 'swsh3-136',
+          quantity: 3,
+          purchaseCents: 2000,
+        ),
+        holding(
+          id: 'h2',
+          catalogId: 'sv1-245',
+          quantity: 2,
+          purchaseCents: 500,
+        ),
       ],
       prices: pricesFor({'swsh3-136': 5000, 'sv1-245': 800}),
       now: now,
@@ -142,8 +151,11 @@ void main() {
       now: now,
     );
 
-    expect(summary.dayChange, isNull,
-        reason: 'Erfundene Nullveränderung wäre eine Falschaussage');
+    expect(
+      summary.dayChange,
+      isNull,
+      reason: 'Erfundene Nullveränderung wäre eine Falschaussage',
+    );
     expect(summary.dayChangeRatio, isNull);
   });
 

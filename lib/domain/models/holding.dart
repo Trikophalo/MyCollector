@@ -13,9 +13,9 @@ enum HoldingType {
   final String label;
 
   static HoldingType fromCode(String? code) => HoldingType.values.firstWhere(
-        (t) => t.code == code,
-        orElse: () => HoldingType.card,
-      );
+    (t) => t.code == code,
+    orElse: () => HoldingType.card,
+  );
 }
 
 /// Bestimmt, ob der Wert automatisch ermittelt oder manuell gesetzt wird.
@@ -28,9 +28,9 @@ enum PriceMode {
   final String code;
 
   static PriceMode fromCode(String? code) => PriceMode.values.firstWhere(
-        (m) => m.code == code,
-        orElse: () => PriceMode.auto,
-      );
+    (m) => m.code == code,
+    orElse: () => PriceMode.auto,
+  );
 }
 
 /// Eine Position im Portfolio — ein einzelner Kauf („Lot").
@@ -131,27 +131,26 @@ class Holding {
     DateTime? manualPriceSetAt,
     bool clearManualPrice = false,
     String? note,
-  }) =>
-      Holding(
-        id: id,
-        portfolioId: portfolioId,
-        type: type,
-        catalogId: catalogId,
-        quantity: quantity ?? this.quantity,
-        purchaseDate: purchaseDate ?? this.purchaseDate,
-        createdAt: createdAt,
-        variant: variant ?? this.variant,
-        condition: condition ?? this.condition,
-        grading: clearGrading ? null : (grading ?? this.grading),
-        certificateNumber: certificateNumber ?? this.certificateNumber,
-        purchasePrice: purchasePrice ?? this.purchasePrice,
-        priceMode: priceMode ?? this.priceMode,
-        manualPrice: clearManualPrice ? null : (manualPrice ?? this.manualPrice),
-        manualPriceSetAt: clearManualPrice
-            ? null
-            : (manualPriceSetAt ?? this.manualPriceSetAt),
-        note: note ?? this.note,
-      );
+  }) => Holding(
+    id: id,
+    portfolioId: portfolioId,
+    type: type,
+    catalogId: catalogId,
+    quantity: quantity ?? this.quantity,
+    purchaseDate: purchaseDate ?? this.purchaseDate,
+    createdAt: createdAt,
+    variant: variant ?? this.variant,
+    condition: condition ?? this.condition,
+    grading: clearGrading ? null : (grading ?? this.grading),
+    certificateNumber: certificateNumber ?? this.certificateNumber,
+    purchasePrice: purchasePrice ?? this.purchasePrice,
+    priceMode: priceMode ?? this.priceMode,
+    manualPrice: clearManualPrice ? null : (manualPrice ?? this.manualPrice),
+    manualPriceSetAt: clearManualPrice
+        ? null
+        : (manualPriceSetAt ?? this.manualPriceSetAt),
+    note: note ?? this.note,
+  );
 
   @override
   String toString() => 'Holding($id, $catalogId, ${quantity}x, $variantLabel)';

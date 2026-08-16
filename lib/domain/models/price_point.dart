@@ -18,7 +18,8 @@ enum PriceSource {
 
   /// Quellen, die den US-Markt abbilden, werden im UI gekennzeichnet (§3.6).
   bool get isUsMarket =>
-      this == PriceSource.priceCharting || this == PriceSource.pokemonPriceTracker;
+      this == PriceSource.priceCharting ||
+      this == PriceSource.pokemonPriceTracker;
 }
 
 /// Schlüssel, unter dem ein Preis für ein Katalogobjekt abgelegt wird.

@@ -29,25 +29,24 @@ void main() {
     Grading? grading,
     Money? manualPrice,
     HoldingType type = HoldingType.card,
-  }) =>
-      Holding(
-        id: id,
-        portfolioId: 'p1',
-        type: type,
-        catalogId: catalogId,
-        quantity: quantity,
-        purchaseDate: DateTime(2026, 3, 1),
-        createdAt: now,
-        variant: CardVariant.holo,
-        condition: CardCondition.nearMint,
-        grading: grading,
-        certificateNumber: grading == null ? null : '78412399',
-        purchasePrice: const Money(6500),
-        priceMode: manualPrice == null ? PriceMode.auto : PriceMode.manual,
-        manualPrice: manualPrice,
-        manualPriceSetAt: manualPrice == null ? null : now,
-        note: 'Aus Sammelbestellung',
-      );
+  }) => Holding(
+    id: id,
+    portfolioId: 'p1',
+    type: type,
+    catalogId: catalogId,
+    quantity: quantity,
+    purchaseDate: DateTime(2026, 3, 1),
+    createdAt: now,
+    variant: CardVariant.holo,
+    condition: CardCondition.nearMint,
+    grading: grading,
+    certificateNumber: grading == null ? null : '78412399',
+    purchasePrice: const Money(6500),
+    priceMode: manualPrice == null ? PriceMode.auto : PriceMode.manual,
+    manualPrice: manualPrice,
+    manualPriceSetAt: manualPrice == null ? null : now,
+    note: 'Aus Sammelbestellung',
+  );
 
   group('Bestand', () {
     test('speichert und liest eine Position verlustfrei', () async {

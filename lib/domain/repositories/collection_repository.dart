@@ -1,7 +1,6 @@
 import '../models/catalog_item.dart';
 import '../models/holding.dart';
 import '../models/portfolio_snapshot.dart';
-import '../models/portfolio_snapshot.dart' show PortfolioSnapshot;
 import '../models/price_point.dart';
 
 /// Zugriff auf die lokale Sammlung.

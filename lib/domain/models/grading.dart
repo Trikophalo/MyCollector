@@ -16,10 +16,10 @@ enum Grader {
   /// Noten, die dieser Anbieter üblicherweise vergibt — absteigend, weil die
   /// hohen Noten die praktisch relevanten sind.
   List<double> get commonGrades => switch (this) {
-        Grader.bgs => const [10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6, 5, 4, 3, 2, 1],
-        Grader.cgc => const [10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6, 5, 4, 3, 2, 1],
-        _ => const [10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
-      };
+    Grader.bgs => const [10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6, 5, 4, 3, 2, 1],
+    Grader.cgc => const [10, 9.5, 9, 8.5, 8, 7.5, 7, 6.5, 6, 5, 4, 3, 2, 1],
+    _ => const [10, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+  };
 
   static Grader? fromCode(String? code) {
     if (code == null || code.isEmpty) return null;
@@ -83,10 +83,8 @@ enum CardCondition {
   final String code;
   final String label;
 
-  static CardCondition fromCode(String? code) => CardCondition.values.firstWhere(
-        (c) => c.code == code,
-        orElse: () => CardCondition.nearMint,
-      );
+  static CardCondition fromCode(String? code) => CardCondition.values
+      .firstWhere((c) => c.code == code, orElse: () => CardCondition.nearMint);
 }
 
 /// Druckvariante einer Karte. Bestimmt mit, welcher Marktpreis gilt.
@@ -102,7 +100,7 @@ enum CardVariant {
   final String label;
 
   static CardVariant fromCode(String? code) => CardVariant.values.firstWhere(
-        (v) => v.code == code,
-        orElse: () => CardVariant.normal,
-      );
+    (v) => v.code == code,
+    orElse: () => CardVariant.normal,
+  );
 }

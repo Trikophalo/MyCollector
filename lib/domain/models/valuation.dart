@@ -46,11 +46,11 @@ class Valuation {
   });
 
   const Valuation.unavailable()
-      : unitValue = const Money.zero(),
-        tier = ValuationTier.unavailable,
-        source = null,
-        asOf = null,
-        isStale = false;
+    : unitValue = const Money.zero(),
+      tier = ValuationTier.unavailable,
+      source = null,
+      asOf = null,
+      isStale = false;
 
   /// Wert je Stück in EUR.
   final Money unitValue;

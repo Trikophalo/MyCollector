@@ -39,15 +39,17 @@ class DriftCollectionRepository implements CollectionRepository {
 
   @override
   Future<Holding?> holding(String id) async {
-    final row = await (db.select(db.holdingEntries)
-          ..where((t) => t.id.equals(id)))
-        .getSingleOrNull();
+    final row = await (db.select(
+      db.holdingEntries,
+    )..where((t) => t.id.equals(id))).getSingleOrNull();
     return row == null ? null : _toHolding(row);
   }
 
   @override
   Future<void> saveHolding(Holding holding) async {
-    await db.into(db.holdingEntries).insertOnConflictUpdate(
+    await db
+        .into(db.holdingEntries)
+        .insertOnConflictUpdate(
           HoldingEntriesCompanion.insert(
             id: holding.id,
             portfolioId: holding.portfolioId,
@@ -82,12 +84,12 @@ class DriftCollectionRepository implements CollectionRepository {
     final wanted = ids.toSet();
     if (wanted.isEmpty) return {};
 
-    final cards = await (db.select(db.cardEntries)
-          ..where((t) => t.id.isIn(wanted)))
-        .get();
-    final sealed = await (db.select(db.sealedEntries)
-          ..where((t) => t.id.isIn(wanted)))
-        .get();
+    final cards = await (db.select(
+      db.cardEntries,
+    )..where((t) => t.id.isIn(wanted))).get();
+    final sealed = await (db.select(
+      db.sealedEntries,
+    )..where((t) => t.id.isIn(wanted))).get();
 
     return {
       for (final row in cards) row.id: _toCard(row),
@@ -150,12 +152,14 @@ class DriftCollectionRepository implements CollectionRepository {
     // In SQLite wählt MAX() in Verbindung mit GROUP BY die zugehörige Zeile
     // aus. Das ist deutlich günstiger, als das ganze Archiv zu laden und in
     // Dart zu filtern.
-    final rows = await db.customSelect(
-      'SELECT catalog_id, price_key, source, value_cents, currency, '
-      'value_eur_cents, MAX(captured_at) AS captured_at '
-      'FROM price_entries GROUP BY catalog_id, price_key',
-      readsFrom: {db.priceEntries},
-    ).get();
+    final rows = await db
+        .customSelect(
+          'SELECT catalog_id, price_key, source, value_cents, currency, '
+          'value_eur_cents, MAX(captured_at) AS captured_at '
+          'FROM price_entries GROUP BY catalog_id, price_key',
+          readsFrom: {db.priceEntries},
+        )
+        .get();
 
     return PriceBook(
       rows.map(
@@ -250,7 +254,9 @@ class DriftCollectionRepository implements CollectionRepository {
 
   @override
   Future<void> saveSnapshot(PortfolioSnapshot snapshot) async {
-    await db.into(db.snapshotEntries).insertOnConflictUpdate(
+    await db
+        .into(db.snapshotEntries)
+        .insertOnConflictUpdate(
           SnapshotEntriesCompanion.insert(
             portfolioId: snapshot.portfolioId,
             date: snapshot.date,
@@ -328,44 +334,45 @@ class DriftCollectionRepository implements CollectionRepository {
       certificateNumber: row.certificateNumber,
       purchasePrice: Money(row.purchasePriceCents),
       priceMode: PriceMode.fromCode(row.priceMode),
-      manualPrice:
-          row.manualPriceCents == null ? null : Money(row.manualPriceCents!),
+      manualPrice: row.manualPriceCents == null
+          ? null
+          : Money(row.manualPriceCents!),
       manualPriceSetAt: row.manualPriceSetAt,
       note: row.note,
     );
   }
 
   CatalogCard _toCard(CardEntry row) => CatalogCard(
-        id: row.id,
-        setId: row.setId,
-        setName: row.setName,
-        localId: row.localId,
-        nameEn: row.nameEn,
-        nameDe: row.nameDe,
-        rarity: row.rarity,
-        imageBase: row.imageBase,
-        imageBaseEn: row.imageBaseEn,
-        setCardCount: row.setCardCount,
-        availableVariants: row.variants
-            .split(',')
-            .where((c) => c.isNotEmpty)
-            .map(CardVariant.fromCode)
-            .toList(),
-      );
+    id: row.id,
+    setId: row.setId,
+    setName: row.setName,
+    localId: row.localId,
+    nameEn: row.nameEn,
+    nameDe: row.nameDe,
+    rarity: row.rarity,
+    imageBase: row.imageBase,
+    imageBaseEn: row.imageBaseEn,
+    setCardCount: row.setCardCount,
+    availableVariants: row.variants
+        .split(',')
+        .where((c) => c.isNotEmpty)
+        .map(CardVariant.fromCode)
+        .toList(),
+  );
 
   SealedProduct _toSealed(SealedEntry row) => SealedProduct(
-        id: row.id,
-        name: row.name,
-        type: SealedProductType.fromCode(row.type),
-        setId: row.setId,
-        setName: row.setName,
-        language: row.language,
-        image: row.image,
-        isCustom: row.isCustom,
-      );
+    id: row.id,
+    name: row.name,
+    type: SealedProductType.fromCode(row.type),
+    setId: row.setId,
+    setName: row.setName,
+    language: row.language,
+    image: row.image,
+    isCustom: row.isCustom,
+  );
 
   PriceSource _sourceFromName(String name) => PriceSource.values.firstWhere(
-        (s) => s.name == name,
-        orElse: () => PriceSource.manual,
-      );
+    (s) => s.name == name,
+    orElse: () => PriceSource.manual,
+  );
 }

@@ -89,18 +89,18 @@ class CatalogCard extends CatalogItem {
   }
 
   CatalogCard copyWith({String? nameDe, String? imageBase}) => CatalogCard(
-        id: id,
-        setId: setId,
-        setName: setName,
-        localId: localId,
-        nameEn: nameEn,
-        nameDe: nameDe ?? this.nameDe,
-        rarity: rarity,
-        imageBase: imageBase ?? this.imageBase,
-        imageBaseEn: imageBaseEn,
-        setCardCount: setCardCount,
-        availableVariants: availableVariants,
-      );
+    id: id,
+    setId: setId,
+    setName: setName,
+    localId: localId,
+    nameEn: nameEn,
+    nameDe: nameDe ?? this.nameDe,
+    rarity: rarity,
+    imageBase: imageBase ?? this.imageBase,
+    imageBaseEn: imageBaseEn,
+    setCardCount: setCardCount,
+    availableVariants: availableVariants,
+  );
 }
 
 /// Produkttyp eines versiegelten Artikels.
@@ -119,11 +119,8 @@ enum SealedProductType {
   final String code;
   final String label;
 
-  static SealedProductType fromCode(String? code) =>
-      SealedProductType.values.firstWhere(
-        (t) => t.code == code,
-        orElse: () => SealedProductType.other,
-      );
+  static SealedProductType fromCode(String? code) => SealedProductType.values
+      .firstWhere((t) => t.code == code, orElse: () => SealedProductType.other);
 }
 
 /// Ein versiegeltes Produkt.

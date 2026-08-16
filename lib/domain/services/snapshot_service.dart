@@ -11,15 +11,14 @@ class SnapshotService {
     required PortfolioSummary summary,
     required String portfolioId,
     required DateTime date,
-  }) =>
-      PortfolioSnapshot(
-        portfolioId: portfolioId,
-        date: PortfolioSnapshot.dateOnly(date),
-        totalValue: summary.totalValue,
-        cardsValue: summary.cardsValue,
-        sealedValue: summary.sealedValue,
-        invested: summary.invested,
-      );
+  }) => PortfolioSnapshot(
+    portfolioId: portfolioId,
+    date: PortfolioSnapshot.dateOnly(date),
+    totalValue: summary.totalValue,
+    cardsValue: summary.cardsValue,
+    sealedValue: summary.sealedValue,
+    invested: summary.invested,
+  );
 
   /// Wahr, wenn für [now] noch kein Abschluss existiert.
   bool needsSnapshot({

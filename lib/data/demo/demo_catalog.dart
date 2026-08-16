@@ -232,14 +232,19 @@ class DemoCatalogSource implements CatalogSource {
         purchasePrice: Money(purchaseCents),
         priceMode: manualPrice == null ? PriceMode.auto : PriceMode.manual,
         manualPrice: manualPrice,
-        manualPriceSetAt: manualPrice == null ? null : now.subtract(
-          const Duration(days: 4),
-        ),
+        manualPriceSetAt: manualPrice == null
+            ? null
+            : now.subtract(const Duration(days: 4)),
       );
     }
 
     return [
-      make(catalogId: 'swsh3-020', quantity: 1, purchaseCents: 6500, daysAgo: 240),
+      make(
+        catalogId: 'swsh3-020',
+        quantity: 1,
+        purchaseCents: 6500,
+        daysAgo: 240,
+      ),
       make(
         catalogId: 'swsh3-020',
         quantity: 1,
@@ -247,9 +252,24 @@ class DemoCatalogSource implements CatalogSource {
         daysAgo: 120,
         grading: const Grading(Grader.psa, 10),
       ),
-      make(catalogId: 'sv3pt5-006', quantity: 3, purchaseCents: 3600, daysAgo: 300),
-      make(catalogId: 'sv3pt5-151', quantity: 2, purchaseCents: 5200, daysAgo: 210),
-      make(catalogId: 'swsh12pt5-160', quantity: 1, purchaseCents: 9800, daysAgo: 165),
+      make(
+        catalogId: 'sv3pt5-006',
+        quantity: 3,
+        purchaseCents: 3600,
+        daysAgo: 300,
+      ),
+      make(
+        catalogId: 'sv3pt5-151',
+        quantity: 2,
+        purchaseCents: 5200,
+        daysAgo: 210,
+      ),
+      make(
+        catalogId: 'swsh12pt5-160',
+        quantity: 1,
+        purchaseCents: 9800,
+        daysAgo: 165,
+      ),
       make(
         catalogId: 'sv2-091',
         quantity: 4,
@@ -266,7 +286,12 @@ class DemoCatalogSource implements CatalogSource {
         // Eigener Referenzpreis aus einem beobachteten Verkauf.
         manualPrice: const Money(158000),
       ),
-      make(catalogId: 'swsh9-154', quantity: 2, purchaseCents: 4900, daysAgo: 60),
+      make(
+        catalogId: 'swsh9-154',
+        quantity: 2,
+        purchaseCents: 4900,
+        daysAgo: 60,
+      ),
       make(
         catalogId: 'sealed-sv3pt5-display',
         quantity: 2,

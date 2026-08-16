@@ -34,10 +34,7 @@ class SeriesPoint {
 
 /// Die aufbereitete Zeitreihe für den Chart samt abgeleiteter Kennzahlen.
 class ChartSeries {
-  const ChartSeries({
-    required this.points,
-    required this.range,
-  });
+  const ChartSeries({required this.points, required this.range});
 
   const ChartSeries.empty(this.range) : points = const [];
 
@@ -147,11 +144,11 @@ class ChartSeriesBuilder {
       var maxArea = -1.0;
       var nextA = rangeFrom;
       for (var j = rangeFrom; j < rangeTo; j++) {
-        final area = ((pointAx - avgX) *
-                    (data[j].value.cents.toDouble() - pointAy) -
-                (pointAx - data[j].date.millisecondsSinceEpoch.toDouble()) *
-                    (avgY - pointAy))
-            .abs();
+        final area =
+            ((pointAx - avgX) * (data[j].value.cents.toDouble() - pointAy) -
+                    (pointAx - data[j].date.millisecondsSinceEpoch.toDouble()) *
+                        (avgY - pointAy))
+                .abs();
         if (area > maxArea) {
           maxArea = area;
           nextA = j;

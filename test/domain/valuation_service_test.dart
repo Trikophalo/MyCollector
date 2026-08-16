@@ -17,36 +17,34 @@ void main() {
     Money purchasePrice = const Money(1000),
     CardVariant variant = CardVariant.normal,
     HoldingType type = HoldingType.card,
-  }) =>
-      Holding(
-        id: 'h1',
-        portfolioId: 'p1',
-        type: type,
-        catalogId: 'swsh3-136',
-        quantity: 1,
-        purchaseDate: DateTime(2026, 1, 10),
-        createdAt: DateTime(2026, 1, 10),
-        variant: variant,
-        grading: grading,
-        purchasePrice: purchasePrice,
-        priceMode: priceMode,
-        manualPrice: manualPrice,
-        manualPriceSetAt: manualPrice == null ? null : DateTime(2026, 8, 12),
-      );
+  }) => Holding(
+    id: 'h1',
+    portfolioId: 'p1',
+    type: type,
+    catalogId: 'swsh3-136',
+    quantity: 1,
+    purchaseDate: DateTime(2026, 1, 10),
+    createdAt: DateTime(2026, 1, 10),
+    variant: variant,
+    grading: grading,
+    purchasePrice: purchasePrice,
+    priceMode: priceMode,
+    manualPrice: manualPrice,
+    manualPriceSetAt: manualPrice == null ? null : DateTime(2026, 8, 12),
+  );
 
   PricePoint buildPrice({
     required PriceKey key,
     required int cents,
     required DateTime capturedAt,
     PriceSource source = PriceSource.tcgdexCardmarket,
-  }) =>
-      PricePoint.eur(
-        catalogId: 'swsh3-136',
-        priceKey: key,
-        source: source,
-        value: Money(cents),
-        capturedAt: capturedAt,
-      );
+  }) => PricePoint.eur(
+    catalogId: 'swsh3-136',
+    priceKey: key,
+    source: source,
+    value: Money(cents),
+    capturedAt: capturedAt,
+  );
 
   group('Stufe 1 — manueller Preis', () {
     test('schlägt jeden vorhandenen Marktpreis', () {
@@ -120,8 +118,11 @@ void main() {
 
       expect(result.tier, ValuationTier.gradedMarket);
       expect(result.unitValue, const Money(120000));
-      expect(result.isUsMarket, isTrue,
-          reason: 'US-Quellen müssen im UI gekennzeichnet werden');
+      expect(
+        result.isUsMarket,
+        isTrue,
+        reason: 'US-Quellen müssen im UI gekennzeichnet werden',
+      );
     });
 
     test('unterscheidet Druckvarianten', () {
@@ -164,8 +165,11 @@ void main() {
         now: now,
       );
 
-      expect(result.tier, ValuationTier.purchasePrice,
-          reason: 'Ohne eigenen PSA-9-Preis darf kein fremder Grade gelten');
+      expect(
+        result.tier,
+        ValuationTier.purchasePrice,
+        reason: 'Ohne eigenen PSA-9-Preis darf kein fremder Grade gelten',
+      );
     });
   });
 
@@ -270,27 +274,30 @@ void main() {
   });
 
   group('Umrechnung aus Fremdwährung', () {
-    test('bewertet mit dem eingefrorenen EUR-Wert, nicht mit dem USD-Betrag', () {
-      final holding = buildHolding(grading: const Grading(Grader.bgs, 9.5));
-      final prices = PriceBook([
-        PricePoint(
-          catalogId: 'swsh3-136',
-          priceKey: PriceKey.graded(const Grading(Grader.bgs, 9.5)),
-          source: PriceSource.priceCharting,
-          value: const Money(50000, currency: Currency.usd),
-          valueEur: const Money(46000),
-          capturedAt: now,
-        ),
-      ]);
+    test(
+      'bewertet mit dem eingefrorenen EUR-Wert, nicht mit dem USD-Betrag',
+      () {
+        final holding = buildHolding(grading: const Grading(Grader.bgs, 9.5));
+        final prices = PriceBook([
+          PricePoint(
+            catalogId: 'swsh3-136',
+            priceKey: PriceKey.graded(const Grading(Grader.bgs, 9.5)),
+            source: PriceSource.priceCharting,
+            value: const Money(50000, currency: Currency.usd),
+            valueEur: const Money(46000),
+            capturedAt: now,
+          ),
+        ]);
 
-      final result = service.valuate(
-        holding: holding,
-        prices: prices,
-        now: now,
-      );
+        final result = service.valuate(
+          holding: holding,
+          prices: prices,
+          now: now,
+        );
 
-      expect(result.unitValue, const Money(46000));
-      expect(result.unitValue.currency, Currency.eur);
-    });
+        expect(result.unitValue, const Money(46000));
+        expect(result.unitValue.currency, Currency.eur);
+      },
+    );
   });
 }

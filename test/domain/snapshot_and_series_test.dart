@@ -53,10 +53,9 @@ void main() {
     });
 
     test('hält die Liste chronologisch sortiert', () {
-      final result = snapshots.upsert(
-        [snapshot(DateTime(2026, 8, 16), 200)],
-        snapshot(DateTime(2026, 8, 10), 100),
-      );
+      final result = snapshots.upsert([
+        snapshot(DateTime(2026, 8, 16), 200),
+      ], snapshot(DateTime(2026, 8, 10), 100));
 
       expect(result.first.date, DateTime(2026, 8, 10));
       expect(result.last.date, DateTime(2026, 8, 16));
@@ -70,8 +69,11 @@ void main() {
 
       expect(result.length, 5);
       expect(result[1].date, DateTime(2026, 8, 11));
-      expect(result[1].totalValue, const Money(1000),
-          reason: 'Lückentage tragen den letzten bekannten Wert');
+      expect(
+        result[1].totalValue,
+        const Money(1000),
+        reason: 'Lückentage tragen den letzten bekannten Wert',
+      );
       expect(result.last.totalValue, const Money(1500));
     });
 
@@ -88,12 +90,10 @@ void main() {
 
   group('ChartSeriesBuilder', () {
     List<PortfolioSnapshot> series(int days) => List.generate(
-          days,
-          (i) => snapshot(
-            now.subtract(Duration(days: days - 1 - i)),
-            1000 + i * 10,
-          ),
-        );
+      days,
+      (i) =>
+          snapshot(now.subtract(Duration(days: days - 1 - i)), 1000 + i * 10),
+    );
 
     test('beschränkt die Reihe auf den gewählten Zeitraum', () {
       final result = builder.build(
@@ -181,8 +181,11 @@ void main() {
       );
 
       expect(result.points.length, 1);
-      expect(result.hasLine, isFalse,
-          reason: 'Die UI zeigt dann den Leerzustand statt einer Kurve');
+      expect(
+        result.hasLine,
+        isFalse,
+        reason: 'Die UI zeigt dann den Leerzustand statt einer Kurve',
+      );
     });
 
     test('erkennt fallende Kurven', () {

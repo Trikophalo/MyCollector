@@ -20,8 +20,7 @@ import 'catalog_source.dart';
 ///    neue Sets, Regionalexklusive). Fehlende Preise sind kein Fehlerfall,
 ///    sondern führen zur nächsten Stufe der Bewertungs-Kaskade.
 class TcgdexSource implements CatalogSource {
-  TcgdexSource({Dio? dio, this.language = 'de'})
-      : _dio = dio ?? _defaultDio();
+  TcgdexSource({Dio? dio, this.language = 'de'}) : _dio = dio ?? _defaultDio();
 
   static const String baseUrl = 'https://api.tcgdex.net/v2';
 
@@ -72,10 +71,7 @@ class TcgdexSource implements CatalogSource {
     final data = await _get<Map<String, dynamic>>('/$language/cards/$id');
     final card = _cardFromDetail(data);
     if (card == null) return null;
-    return CatalogCardResult(
-      card: card,
-      prices: _pricesFrom(data, card),
-    );
+    return CatalogCardResult(card: card, prices: _pricesFrom(data, card));
   }
 
   @override
@@ -172,7 +168,7 @@ class TcgdexSource implements CatalogSource {
 
     final capturedAt =
         DateTime.tryParse(cardmarket['updated']?.toString() ?? '') ??
-            DateTime.now();
+        DateTime.now();
 
     final points = <PricePoint>[];
 
@@ -240,10 +236,11 @@ class TcgdexSource implements CatalogSource {
 /// Netzwerkfehler und 5xx werden erneut versucht; 4xx nicht — ein nicht
 /// gefundener Datensatz wird durch Wiederholen nicht besser.
 class _RetryInterceptor extends Interceptor {
-  _RetryInterceptor(this._dio, {this.maxAttempts = 3});
+  _RetryInterceptor(this._dio);
 
   final Dio _dio;
-  final int maxAttempts;
+
+  int get maxAttempts => _backoff.length;
 
   static const List<Duration> _backoff = [
     Duration(seconds: 2),

@@ -95,19 +95,21 @@ class PortfolioSummary {
 
   /// Positionen mit dem größten absoluten Gewinn, absteigend.
   List<PositionValuation> topGainers({int limit = 5}) {
-    final gainers = positions
-        .where((p) => p.hasValue && p.absoluteReturn.isPositive)
-        .toList()
-      ..sort((a, b) => b.absoluteReturn.compareTo(a.absoluteReturn));
+    final gainers =
+        positions
+            .where((p) => p.hasValue && p.absoluteReturn.isPositive)
+            .toList()
+          ..sort((a, b) => b.absoluteReturn.compareTo(a.absoluteReturn));
     return gainers.take(limit).toList();
   }
 
   /// Positionen mit dem größten absoluten Verlust, absteigend nach Verlusthöhe.
   List<PositionValuation> topLosers({int limit = 5}) {
-    final losers = positions
-        .where((p) => p.hasValue && p.absoluteReturn.isNegative)
-        .toList()
-      ..sort((a, b) => a.absoluteReturn.compareTo(b.absoluteReturn));
+    final losers =
+        positions
+            .where((p) => p.hasValue && p.absoluteReturn.isNegative)
+            .toList()
+          ..sort((a, b) => a.absoluteReturn.compareTo(b.absoluteReturn));
     return losers.take(limit).toList();
   }
 
@@ -145,21 +147,23 @@ class PortfolioSummary {
         SealedProduct(:final setName?) => setName,
         _ => 'Ohne Set',
       };
-      totals[label] = (totals[label] ?? const Money.zero()) + position.totalValue;
+      totals[label] =
+          (totals[label] ?? const Money.zero()) + position.totalValue;
       counts[label] = (counts[label] ?? 0) + 1;
     }
 
-    final entries = totals.entries
-        .map(
-          (e) => BreakdownEntry(
-            label: e.key,
-            value: e.value,
-            share: _share(e.value),
-            positionCount: counts[e.key] ?? 0,
-          ),
-        )
-        .toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
+    final entries =
+        totals.entries
+            .map(
+              (e) => BreakdownEntry(
+                label: e.key,
+                value: e.value,
+                share: _share(e.value),
+                positionCount: counts[e.key] ?? 0,
+              ),
+            )
+            .toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
 
     return entries.take(limit).toList();
   }

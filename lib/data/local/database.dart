@@ -59,7 +59,8 @@ class HoldingEntries extends Table {
   TextColumn get graderCode => text().nullable()();
   RealColumn get grade => real().nullable()();
   TextColumn get certificateNumber => text().nullable()();
-  IntColumn get purchasePriceCents => integer().withDefault(const Constant(0))();
+  IntColumn get purchasePriceCents =>
+      integer().withDefault(const Constant(0))();
   DateTimeColumn get purchaseDate => dateTime()();
   TextColumn get priceMode => text().withDefault(const Constant('auto'))();
   IntColumn get manualPriceCents => integer().nullable()();
@@ -112,17 +113,17 @@ class SnapshotEntries extends Table {
 class AppDatabase extends _$AppDatabase {
   /// [executor] wird in Tests mit einer In-Memory-Datenbank belegt.
   AppDatabase([QueryExecutor? executor])
-      : super(executor ?? driftDatabase(name: 'mycollector'));
+    : super(executor ?? driftDatabase(name: 'mycollector'));
 
   @override
   int get schemaVersion => 1;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-        onCreate: (m) async => m.createAll(),
-        beforeOpen: (details) async {
-          // Fremdschlüssel sind in SQLite standardmäßig aus.
-          await customStatement('PRAGMA foreign_keys = ON');
-        },
-      );
+    onCreate: (m) async => m.createAll(),
+    beforeOpen: (details) async {
+      // Fremdschlüssel sind in SQLite standardmäßig aus.
+      await customStatement('PRAGMA foreign_keys = ON');
+    },
+  );
 }
